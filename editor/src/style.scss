@@ -1,0 +1,25 @@
+/**
+ * Editor panel styles.
+ *
+ * Deliberately minimal: the panel is built from core components so it inherits the
+ * editor's own look, including dark mode and high contrast. Only what core does not
+ * provide is styled here.
+ */
+
+.scstudio-panel {
+	.scstudio-pill {
+		white-space: nowrap;
+	}
+
+	img {
+		display: block;
+	}
+
+	// The live preview is an approximation, so it is visually distinguished from the
+	// real render rather than being passed off as it.
+	> div > div[role="img"] {
+		background: #1e1e1e;
+		outline: 1px dashed #949494;
+		outline-offset: 2px;
+	}
+}

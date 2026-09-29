@@ -1,0 +1,23 @@
+parameters:
+	level: 6
+	paths:
+		- src
+		- social-card-studio.php
+		- uninstall.php
+	bootstrapFiles:
+		- tests/phpstan-bootstrap.php
+	# Action Scheduler defines its API at runtime. Only the three files that declare
+	# the symbols this plugin touches are scanned: pointing PHPStan at the whole
+	# package exhausts a 1 GB limit walking its bundled libraries.
+	scanFiles:
+		- vendor/woocommerce/action-scheduler/functions.php
+		- vendor/woocommerce/action-scheduler/classes/abstracts/ActionScheduler_Store.php
+		- vendor/woocommerce/action-scheduler/classes/ActionScheduler_Versions.php
+	# Excluded from analysis but NOT from symbol discovery: a plain excludePaths list
+	# hides vendor from both, which is why Action Scheduler's as_* functions could not
+	# be found even with scanDirectories set.
+	excludePaths:
+		analyse:
+			- vendor
+			- node_modules
+	treatPhpDocTypesAsCertain: false

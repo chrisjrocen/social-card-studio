@@ -1,0 +1,187 @@
+{
+	"schema": 1,
+	"id": "split-frame",
+	"version": 1,
+	"canvas": {
+		"w": 1200,
+		"h": 630,
+		"bg": "#0F172A"
+	},
+	"safe_area": {
+		"top": 48,
+		"right": 56,
+		"bottom": 48,
+		"left": 56
+	},
+	"layers": [
+		{
+			"type": "image",
+			"id": "bg",
+			"source": "{{featured_image}}",
+			"fallback": "{{site_logo}}",
+			"fit": "cover",
+			"box": {
+				"x": 600,
+				"y": 0,
+				"w": 600,
+				"h": 630
+			},
+			"shape": "rect",
+			"radius": 0,
+			"opacity": 1.0,
+			"effects": {
+				"blur": 0,
+				"grayscale": false,
+				"tint": ""
+			}
+		},
+		{
+			"type": "shape",
+			"id": "panel",
+			"shape": "rect",
+			"fill": "#0F172A",
+			"box": {
+				"x": 0,
+				"y": 0,
+				"w": 600,
+				"h": 630
+			},
+			"stroke": "",
+			"stroke_width": 0,
+			"radius": 0,
+			"opacity": 1.0
+		},
+		{
+			"type": "shape",
+			"id": "seam",
+			"shape": "rect",
+			"fill": "{{brand_accent}}",
+			"box": {
+				"x": 595,
+				"y": 0,
+				"w": 5,
+				"h": 630
+			},
+			"stroke": "",
+			"stroke_width": 0,
+			"radius": 0,
+			"opacity": 1.0
+		},
+		{
+			"type": "text",
+			"id": "eyebrow",
+			"content": "{{primary_term|post_type_label}}",
+			"box": {
+				"x": 56,
+				"y": 150,
+				"w": 496,
+				"h": 26
+			},
+			"font": {
+				"role": "body",
+				"weight": 600,
+				"family": ""
+			},
+			"size": {
+				"min": 14,
+				"max": 18,
+				"autofit": true
+			},
+			"line_height": 1.2,
+			"tracking": 0.09,
+			"align": "left",
+			"vertical_align": "top",
+			"max_lines": 1,
+			"overflow": "ellipsis",
+			"color": "#93C5FD",
+			"transform": "uppercase"
+		},
+		{
+			"type": "text",
+			"id": "headline",
+			"content": "{{share_headline|title}}",
+			"box": {
+				"x": 56,
+				"y": 200,
+				"w": 496,
+				"h": 250
+			},
+			"font": {
+				"role": "heading",
+				"weight": 700,
+				"family": ""
+			},
+			"size": {
+				"min": 26,
+				"max": 52,
+				"autofit": true
+			},
+			"line_height": 1.12,
+			"tracking": -0.01,
+			"align": "left",
+			"vertical_align": "middle",
+			"max_lines": 4,
+			"overflow": "ellipsis",
+			"color": "#FFFFFF",
+			"transform": "none"
+		},
+		{
+			"type": "text",
+			"id": "meta",
+			"content": "{{author_name}} · {{reading_time}}",
+			"box": {
+				"x": 56,
+				"y": 470,
+				"w": 496,
+				"h": 26
+			},
+			"font": {
+				"role": "body",
+				"weight": 400,
+				"family": ""
+			},
+			"size": {
+				"min": 14,
+				"max": 18,
+				"autofit": true
+			},
+			"line_height": 1.2,
+			"tracking": 0.0,
+			"align": "left",
+			"vertical_align": "top",
+			"max_lines": 1,
+			"overflow": "ellipsis",
+			"color": "#CBD5E1",
+			"transform": "none"
+		},
+		{
+			"type": "text",
+			"id": "site",
+			"content": "{{site_name}}",
+			"box": {
+				"x": 56,
+				"y": 520,
+				"w": 496,
+				"h": 24
+			},
+			"font": {
+				"role": "body",
+				"weight": 400,
+				"family": ""
+			},
+			"size": {
+				"min": 13,
+				"max": 16,
+				"autofit": true
+			},
+			"line_height": 1.2,
+			"tracking": 0.08,
+			"align": "left",
+			"vertical_align": "top",
+			"max_lines": 1,
+			"overflow": "ellipsis",
+			"color": "#64748B",
+			"transform": "uppercase"
+		}
+	]
+}

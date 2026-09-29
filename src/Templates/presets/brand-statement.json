@@ -1,0 +1,169 @@
+{
+	"schema": 1,
+	"id": "brand-statement",
+	"version": 1,
+	"canvas": {
+		"w": 1200,
+		"h": 630,
+		"bg": "#0F172A"
+	},
+	"safe_area": {
+		"top": 48,
+		"right": 56,
+		"bottom": 48,
+		"left": 56
+	},
+	"layers": [
+		{
+			"type": "gradient",
+			"id": "ground",
+			"box": {
+				"x": 0,
+				"y": 0,
+				"w": 1200,
+				"h": 630
+			},
+			"angle": 90,
+			"stops": [
+				{
+					"at": 0.0,
+					"color": "#1E293BFF"
+				},
+				{
+					"at": 1.0,
+					"color": "#0F172AFF"
+				}
+			]
+		},
+		{
+			"type": "shape",
+			"id": "accent-bar",
+			"shape": "rect",
+			"fill": "{{brand_accent}}",
+			"box": {
+				"x": 56,
+				"y": 232,
+				"w": 96,
+				"h": 6
+			},
+			"stroke": "",
+			"stroke_width": 0,
+			"radius": 0,
+			"opacity": 1.0
+		},
+		{
+			"type": "image",
+			"id": "logo",
+			"source": "{{site_logo}}",
+			"fit": "contain",
+			"box": {
+				"x": 56,
+				"y": 120,
+				"w": 200,
+				"h": 72
+			},
+			"shape": "rect",
+			"radius": 0,
+			"opacity": 1.0,
+			"effects": {
+				"blur": 0,
+				"grayscale": false,
+				"tint": ""
+			},
+			"fallback": ""
+		},
+		{
+			"type": "text",
+			"id": "site",
+			"content": "{{share_headline|site_name}}",
+			"box": {
+				"x": 56,
+				"y": 268,
+				"w": 900,
+				"h": 150
+			},
+			"font": {
+				"role": "heading",
+				"weight": 700,
+				"family": ""
+			},
+			"size": {
+				"min": 36,
+				"max": 78,
+				"autofit": true
+			},
+			"line_height": 1.08,
+			"tracking": -0.015,
+			"align": "left",
+			"vertical_align": "bottom",
+			"max_lines": 2,
+			"overflow": "ellipsis",
+			"color": "#FFFFFF",
+			"transform": "none",
+			"shadow": {
+				"x": 0,
+				"y": 2,
+				"blur": 8,
+				"color": "#00000059"
+			}
+		},
+		{
+			"type": "text",
+			"id": "tagline",
+			"content": "{{subhead|site_tagline}}",
+			"box": {
+				"x": 56,
+				"y": 436,
+				"w": 820,
+				"h": 76
+			},
+			"font": {
+				"role": "body",
+				"weight": 400,
+				"family": ""
+			},
+			"size": {
+				"min": 17,
+				"max": 26,
+				"autofit": true
+			},
+			"line_height": 1.3,
+			"tracking": 0.0,
+			"align": "left",
+			"vertical_align": "top",
+			"max_lines": 2,
+			"overflow": "ellipsis",
+			"color": "#CBD5E1",
+			"transform": "none"
+		},
+		{
+			"type": "text",
+			"id": "domain",
+			"content": "{{domain}}",
+			"box": {
+				"x": 56,
+				"y": 540,
+				"w": 700,
+				"h": 26
+			},
+			"font": {
+				"role": "body",
+				"weight": 400,
+				"family": ""
+			},
+			"size": {
+				"min": 14,
+				"max": 18,
+				"autofit": true
+			},
+			"line_height": 1.2,
+			"tracking": 0.1,
+			"align": "left",
+			"vertical_align": "bottom",
+			"max_lines": 1,
+			"overflow": "ellipsis",
+			"color": "#64748B",
+			"transform": "uppercase"
+		}
+	]
+}

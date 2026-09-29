@@ -1,0 +1,125 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Preview parity harness</title>
+<style>
+	body { font: 13px/1.5 -apple-system, system-ui, sans-serif; margin: 20px; background: #f6f7f7; }
+	#out { white-space: pre; font-family: ui-monospace, monospace; font-size: 12px; }
+	#stage { margin-top: 16px; }
+	.card { margin-bottom: 12px; }
+</style>
+<h1>Social Card Studio — DOM preview parity</h1>
+<div id="out">running…</div>
+<div id="stage"></div>
+
+<script type="module">
+import { layout, canvasMetrics } from '../editor/src/layout.js';
+import { renderPreview } from '../editor/src/preview.js';
+
+const out = document.getElementById( 'out' );
+const stage = document.getElementById( 'stage' );
+
+function specFromLayer( layer ) {
+	const size = layer.size || {};
+	return {
+		box: layer.box,
+		sizeMin: size.min ?? 16,
+		sizeMax: size.max ?? 64,
+		autofit: size.autofit !== false,
+		lineHeight: layer.line_height ?? 1.2,
+		tracking: layer.tracking ?? 0,
+		align: layer.align || 'left',
+		verticalAlign: layer.vertical_align || 'top',
+		maxLines: layer.max_lines ?? 3,
+		overflow: layer.overflow || 'ellipsis',
+		transform: layer.transform || 'none',
+	};
+}
+
+// Decode entities the way the server's normalisation does, so the comparison is of
+// layout rather than of who unescapes what.
+function decode( text ) {
+	const el = document.createElement( 'textarea' );
+	el.innerHTML = text;
+	return el.value;
+}
+
+async function run() {
+	const [ serverRes, dataRes ] = await Promise.all( [
+		fetch( './server-layout.json' ).then( ( r ) => r.json() ),
+		fetch( './preview-data.json' ).then( ( r ) => r.json() ),
+	] );
+
+	// Register the very fonts the server rasterises with.
+	const faces = [];
+	for ( const [ key, font ] of Object.entries( dataRes.fonts ) ) {
+		const face = new FontFace( font.family, `url(../assets/fonts/${ font.file })` );
+		faces.push( face.load().then( ( f ) => document.fonts.add( f ) ) );
+	}
+	await Promise.all( faces );
+	await document.fonts.ready;
+
+	const metrics = canvasMetrics();
+	const results = { total: 0, sizeMatch: 0, lineCountMatch: 0, textMatch: 0, mismatches: [] };
+
+	for ( const [ key, expected ] of Object.entries( serverRes.server ) ) {
+		const [ tid, layerId, titleName ] = key.split( '|' );
+		const doc = dataRes.documents[ tid ];
+		const layer = ( doc.layers || [] ).find( ( l ) => l.id === layerId );
+		if ( ! layer ) continue;
+
+		const fontKey = `${ layer.font?.role || 'body' }-${ layer.font?.weight || 400 }`;
+		const font = dataRes.fonts[ fontKey ] || dataRes.fonts[ 'body-400' ];
+
+		const actual = layout( decode( serverRes.titles[ titleName ] ), specFromLayer( layer ), font, metrics, false );
+
+		results.total++;
+		const sizeOk = Math.abs( actual.size - expected.size ) < 1e-9;
+		const countOk = actual.lines.length === expected.lines.length;
+		const textOk = JSON.stringify( actual.lines.map( ( l ) => l.text ) ) === JSON.stringify( expected.lines );
+
+		if ( sizeOk ) results.sizeMatch++;
+		if ( countOk ) results.lineCountMatch++;
+		if ( textOk ) results.textMatch++;
+
+		if ( ! countOk && results.mismatches.length < 12 ) {
+			results.mismatches.push( {
+				key,
+				serverSize: expected.size,
+				browserSize: actual.size,
+				serverLines: expected.lines,
+				browserLines: actual.lines.map( ( l ) => l.text ),
+			} );
+		}
+	}
+
+	// Also draw a few real previews so the rendering path itself is exercised.
+	for ( const tid of [ 'editorial-left', 'minimal-serif', 'bold-statement' ] ) {
+		const wrap = document.createElement( 'div' );
+		wrap.className = 'card';
+		stage.appendChild( wrap );
+		renderPreview( wrap, dataRes.documents[ tid ], {
+			share_headline: 'Why your WordPress backups are lying to you',
+			headline: 'Why your WordPress backups are lying to you',
+			title: 'Why your WordPress backups are lying to you',
+			site_name: 'WP Fundi',
+			site_tagline: 'Practical WordPress for people who ship',
+			primary_term: 'Security',
+			author_name: 'Chris Rwakabubu',
+			author_role: 'Founder, Chrx Digital',
+			reading_time: '6 min read',
+			brand_accent: '#2563EB',
+			domain: 'wp-fundi.com',
+			date: 'September 2026',
+			subhead: '',
+		}, { images: {}, fonts: dataRes.fonts, scale: 0.5 } );
+	}
+
+	window.__parity = results;
+	out.textContent = JSON.stringify( results, null, 1 );
+}
+
+run().catch( ( e ) => {
+	out.textContent = 'ERROR: ' + e.message + '\n' + e.stack;
+	window.__parity = { error: e.message };
+} );
+</script>

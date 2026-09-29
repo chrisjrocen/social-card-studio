@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<ruleset name="Social Card Studio">
+	<description>WordPress-Extra plus WordPress-Docs, per SPEC.md §3.</description>
+
+	<file>.</file>
+
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/build/*</exclude-pattern>
+	<exclude-pattern>/assets/fonts/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg name="parallel" value="8"/>
+	<arg value="ps"/>
+
+	<config name="minimum_wp_version" value="6.4"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="social-card-studio"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!--
+		The original `scs_` prefix was three characters, which WPCS 3.x and the
+		WordPress.org review team both reject as too short to be unique. It is
+		`scstudio_` / `SCSTUDIO_` throughout instead.
+	-->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="scstudio"/>
+				<element value="SCSTUDIO"/>
+				<element value="ChrxDigital\SocialCardStudio"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- The unit suite stubs a handful of WordPress functions; see tests/bootstrap.php. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<!--
+		The layout parity test (SPEC §2.3) has to run the JavaScript engine, and prints
+		mismatches with var_export. Both are correct in a test and nowhere else, so the
+		exemption is scoped to tests/ rather than relaxed globally.
+	-->
+	<rule ref="WordPress.PHP.DiscouragedPHPFunctions">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.PHP.DevelopmentFunctions">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<!--
+		Render exceptions carry diagnostic detail (dimensions, byte counts, library
+		messages) and are always caught by the fallback chain in SPEC §12.1 — §12.2
+		requires that no render path reach a public page at all. Escaping them for HTML
+		would corrupt the text that actually gets logged.
+	-->
+	<rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
+		<exclude-pattern>/src/Render/*</exclude-pattern>
+	</rule>
+
+	<!--
+		The PSR-4 autoloader requires StudlyCase class files, which is incompatible
+		with WordPress's hyphenated-lowercase file naming rule.
+	-->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>/src/*</exclude-pattern>
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<severity>0</severity>
+	</rule>
+</ruleset>

@@ -1,0 +1,142 @@
+{
+	"schema": 1,
+	"id": "minimal-serif",
+	"version": 1,
+	"canvas": {
+		"w": 1200,
+		"h": 630,
+		"bg": "#FAFAF7"
+	},
+	"safe_area": {
+		"top": 48,
+		"right": 56,
+		"bottom": 48,
+		"left": 56
+	},
+	"layers": [
+		{
+			"type": "image",
+			"id": "logo",
+			"source": "{{site_logo}}",
+			"fit": "contain",
+			"box": {
+				"x": 56,
+				"y": 56,
+				"w": 150,
+				"h": 46
+			},
+			"shape": "rect",
+			"radius": 0,
+			"opacity": 1.0,
+			"effects": {
+				"blur": 0,
+				"grayscale": false,
+				"tint": ""
+			},
+			"fallback": ""
+		},
+		{
+			"type": "shape",
+			"id": "rule",
+			"shape": "rect",
+			"fill": "{{brand_accent}}",
+			"box": {
+				"x": 56,
+				"y": 228,
+				"w": 72,
+				"h": 2
+			},
+			"stroke": "",
+			"stroke_width": 0,
+			"radius": 0,
+			"opacity": 1.0
+		},
+		{
+			"type": "text",
+			"id": "headline",
+			"content": "{{share_headline|title}}",
+			"box": {
+				"x": 56,
+				"y": 258,
+				"w": 920,
+				"h": 230
+			},
+			"font": {
+				"role": "heading",
+				"weight": 700,
+				"family": "source-serif-4"
+			},
+			"size": {
+				"min": 30,
+				"max": 66,
+				"autofit": true
+			},
+			"line_height": 1.14,
+			"tracking": -0.008,
+			"align": "left",
+			"vertical_align": "top",
+			"max_lines": 3,
+			"overflow": "ellipsis",
+			"color": "#111827",
+			"transform": "none"
+		},
+		{
+			"type": "text",
+			"id": "meta",
+			"content": "{{author_name}}",
+			"box": {
+				"x": 56,
+				"y": 528,
+				"w": 600,
+				"h": 26
+			},
+			"font": {
+				"role": "body",
+				"weight": 400,
+				"family": ""
+			},
+			"size": {
+				"min": 14,
+				"max": 18,
+				"autofit": true
+			},
+			"line_height": 1.2,
+			"tracking": 0.0,
+			"align": "left",
+			"vertical_align": "bottom",
+			"max_lines": 1,
+			"overflow": "ellipsis",
+			"color": "#4B5563",
+			"transform": "none"
+		},
+		{
+			"type": "text",
+			"id": "date",
+			"content": "{{date}}",
+			"box": {
+				"x": 744,
+				"y": 528,
+				"w": 400,
+				"h": 26
+			},
+			"font": {
+				"role": "body",
+				"weight": 400,
+				"family": ""
+			},
+			"size": {
+				"min": 14,
+				"max": 18,
+				"autofit": true
+			},
+			"line_height": 1.2,
+			"tracking": 0.0,
+			"align": "right",
+			"vertical_align": "bottom",
+			"max_lines": 1,
+			"overflow": "ellipsis",
+			"color": "#9CA3AF",
+			"transform": "none"
+		}
+	]
+}

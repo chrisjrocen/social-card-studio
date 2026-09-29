@@ -1,0 +1,17 @@
+{
+	"name": "social-card-studio-editor",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Editor sources for Social Card Studio, including the JavaScript twin of the shared text layout engine.",
+	"license": "GPL-2.0-or-later",
+	"type": "module",
+	"scripts": {
+		"build": "wp-scripts build --webpack-src-dir=src --output-path=../build",
+		"start": "wp-scripts start --webpack-src-dir=src --output-path=../build",
+		"parity": "node test/parity.mjs ../tests/fixtures/layout-fixtures.json",
+		"lint:js": "wp-scripts lint-js src"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.27.0"
+	}
+}

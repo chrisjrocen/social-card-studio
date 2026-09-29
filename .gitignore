@@ -1,0 +1,9 @@
+/vendor/
+/node_modules/
+/build/
+.phpunit.result.cache
+.phpcs.cache
+phpcs.xml
+phpstan.neon
+phpunit.xml
+.DS_Store
