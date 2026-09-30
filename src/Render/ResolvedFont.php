@@ -32,7 +32,6 @@ final class ResolvedFont {
 
 	public const STEP_SETTING  = 'setting';
 	public const STEP_THEME    = 'theme';
-	public const STEP_ADAPTER  = 'adapter';
 	public const STEP_BUNDLED  = 'bundled';
 	public const STEP_FALLBACK = 'script_fallback';
 

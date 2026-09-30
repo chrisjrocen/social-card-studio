@@ -195,7 +195,6 @@ final class EditorController {
 					$tokens,
 					$this->fonts,
 					$this->memory,
-					'keep_if_supported' === $this->settings->get( 'emoji', 'strip' ),
 					$post_id,
 					(int) $this->settings->get( 'output.quality', 82 )
 				)

@@ -14,7 +14,6 @@ namespace ChrxDigital\SocialCardStudio\Delivery;
 use ChrxDigital\SocialCardStudio\Card\CardRecord;
 use ChrxDigital\SocialCardStudio\Card\CardRepository;
 use ChrxDigital\SocialCardStudio\Generation\CardGenerator;
-use ChrxDigital\SocialCardStudio\Settings\Settings;
 use ChrxDigital\SocialCardStudio\Storage\CardDirectory;
 use WP_Post;
 
@@ -46,14 +45,12 @@ final class ImageResolver {
 	 * @param CardRepository $repository Card meta storage.
 	 * @param CardDirectory  $directory  Card directory resolver.
 	 * @param CardGenerator  $generator  Generator, for the homepage card record.
-	 * @param Settings       $settings   Plugin settings.
 	 * @param \Closure       $seo        Returns the SeoDetector, resolved at call time.
 	 */
 	public function __construct(
 		private readonly CardRepository $repository,
 		private readonly CardDirectory $directory,
 		private readonly CardGenerator $generator,
-		private readonly Settings $settings,
 		private readonly \Closure $seo
 	) {}
 
@@ -331,13 +328,8 @@ final class ImageResolver {
 		 *
 		 * @since 0.1.0
 		 *
-		 * @param bool   $serve             Whether to serve stale cards.
-		 * @param string $regeneration_mode The site's regeneration mode.
+		 * @param bool $serve Whether to serve stale cards.
 		 */
-		return (bool) apply_filters(
-			'scstudio_serve_stale',
-			true,
-			(string) $this->settings->get( 'regeneration_mode', 'auto_template_manual_ai' )
-		);
+		return (bool) apply_filters( 'scstudio_serve_stale', true );
 	}
 }

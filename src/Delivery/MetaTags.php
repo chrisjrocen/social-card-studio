@@ -217,7 +217,7 @@ final class MetaTags {
 			return false;
 		}
 
-		if ( ! $this->priority->should_supply( $post_id, false, false ) ) {
+		if ( ! $this->priority->should_supply( $post_id, false ) ) {
 			return false;
 		}
 

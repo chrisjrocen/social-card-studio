@@ -13,7 +13,6 @@ declare( strict_types=1 );
 namespace ChrxDigital\SocialCardStudio\Render;
 
 use ChrxDigital\SocialCardStudio\Settings\Settings;
-use ChrxDigital\SocialCardStudio\Storage\CardDirectory;
 use ChrxDigital\SocialCardStudio\Support\Hash;
 
 defined( 'ABSPATH' ) || exit;
@@ -21,8 +20,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Resolves a role to a font file a rasteriser can open.
  *
- * Five steps, first success wins, every step recorded. The recording is not
- * decoration: "inherit theme fonts" fails silently whenever the theme's font is
+ * Explicit bundled choice, then theme.json, then the bundled families, then the
+ * script-coverage filter. First success wins, every step recorded. The recording is
+ * not decoration: "inherit theme fonts" fails silently whenever the theme's font is
  * WOFF2 or remote-hosted, and without a trace the symptom is a card that looks
  * wrong for no visible reason.
  *
@@ -41,6 +41,16 @@ final class FontResolver {
 	private const WEB_ONLY = array( 'woff', 'woff2', 'eot', 'svg' );
 
 	/**
+	 * Magic byte sequences for the sfnt container formats, per SPEC §6.1.
+	 */
+	private const MAGIC = array(
+		"\x00\x01\x00\x00", // TrueType outlines.
+		'OTTO',             // CFF outlines.
+		'true',             // Legacy Apple TrueType.
+		'ttcf',             // TrueType collection.
+	);
+
+	/**
 	 * Cached resolutions, keyed by role and weight.
 	 *
 	 * @var array<string, ResolvedFont>
@@ -52,13 +62,30 @@ final class FontResolver {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param Settings      $settings  Plugin settings.
-	 * @param CardDirectory $directory Card directory, for cached webfonts and uploads.
+	 * @param Settings $settings Plugin settings.
 	 */
 	public function __construct(
-		private readonly Settings $settings,
-		private readonly CardDirectory $directory
+		private readonly Settings $settings
 	) {}
+
+	/**
+	 * Reports whether a byte string starts with a font signature.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $bytes At least the first four bytes of a candidate file.
+	 *
+	 * @return bool True when the signature matches a usable format.
+	 */
+	public static function has_font_magic( string $bytes ): bool {
+		foreach ( self::MAGIC as $magic ) {
+			if ( str_starts_with( $bytes, $magic ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**
 	 * Resolves a role.
@@ -82,7 +109,7 @@ final class FontResolver {
 
 		$skipped = array();
 
-		foreach ( array( 'from_setting', 'from_theme', 'from_adapter' ) as $step ) {
+		foreach ( array( 'from_setting', 'from_theme' ) as $step ) {
 			$font = $this->{$step}( $role, $weight, $skipped );
 
 			if ( $font instanceof ResolvedFont ) {
@@ -288,14 +315,7 @@ final class FontResolver {
 			return $bundled;
 		}
 
-		// An uploaded font, stored by FontUpload outside the year/month tree.
-		$path = $this->directory->path( 'fonts/' . basename( $choice ) );
-
-		if ( is_readable( $path ) && $this->is_rasterisable( $path ) ) {
-			return new ResolvedFont( $role, basename( $choice ), $path, $weight, ResolvedFont::STEP_SETTING );
-		}
-
-		$skipped[] = 'setting: the chosen font "' . $choice . '" is missing or not rasterisable';
+		$skipped[] = 'setting: the chosen font "' . $choice . '" is not a bundled family';
 
 		return null;
 	}
@@ -357,47 +377,6 @@ final class FontResolver {
 	}
 
 	/**
-	 * Step 3 of SPEC §6.1: theme-specific adapters.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @param string   $role    Role being resolved.
-	 * @param int      $weight  Desired weight.
-	 * @param string[] $skipped Collected skip reasons, by reference.
-	 *
-	 * @return ResolvedFont|null Font, or null to continue the chain.
-	 */
-	private function from_adapter( string $role, int $weight, array &$skipped ): ?ResolvedFont {
-		$path = $this->blocksy_font_path();
-
-		if ( '' !== $path && $this->is_rasterisable( $path ) ) {
-			return new ResolvedFont( $role, 'Blocksy self-hosted', $path, $weight, ResolvedFont::STEP_ADAPTER );
-		}
-
-		/**
-		 * Filters the font supplied by a theme-specific adapter.
-		 *
-		 * Documented in SPEC §6.1 step 3 so other themes can be supported without
-		 * touching core.
-		 *
-		 * @since 0.1.0
-		 *
-		 * @param ResolvedFont|null $font   Adapter-supplied font, or null.
-		 * @param string            $role   Role being resolved.
-		 * @param int               $weight Desired weight.
-		 */
-		$font = apply_filters( 'scstudio_theme_font_adapter', null, $role, $weight );
-
-		if ( $font instanceof ResolvedFont && $font->is_usable() ) {
-			return new ResolvedFont( $font->role, $font->family, $font->path, $font->weight, ResolvedFont::STEP_ADAPTER );
-		}
-
-		$skipped[] = 'adapter: no theme adapter supplied a rasterisable font';
-
-		return null;
-	}
-
-	/**
 	 * Resolves one `src` entry from a theme font face.
 	 *
 	 * @since 0.1.0
@@ -415,7 +394,7 @@ final class FontResolver {
 
 		if ( in_array( $extension, self::WEB_ONLY, true ) ) {
 			$skipped[] = sprintf(
-				'theme: "%s" is %s, which GD and Imagick cannot rasterise',
+				'theme: "%s" is %s, which GD cannot rasterise',
 				$family,
 				strtoupper( $extension )
 			);
@@ -440,7 +419,9 @@ final class FontResolver {
 		}
 
 		if ( preg_match( '#^https?://#i', $src ) ) {
-			return $this->fetch_remote( $src, $role, $weight, $family, $skipped );
+			$skipped[] = sprintf( 'theme: "%s" is hosted remotely; remote fonts are not downloaded', $family );
+
+			return null;
 		}
 
 		if ( is_readable( $src ) && $this->is_rasterisable( $src ) ) {
@@ -448,105 +429,6 @@ final class FontResolver {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Downloads a remote webfont, if the admin has consented.
-	 *
-	 * Off by default and gated on an explicit setting, per SPEC §6.1 step 2 and the
-	 * no-outbound-requests-without-consent rule in §18.3.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @param string   $url     Remote font URL.
-	 * @param string   $role    Role being resolved.
-	 * @param int      $weight  Face weight.
-	 * @param string   $family  Family name.
-	 * @param string[] $skipped Collected skip reasons, by reference.
-	 *
-	 * @return ResolvedFont|null Font, or null to keep looking.
-	 */
-	private function fetch_remote( string $url, string $role, int $weight, string $family, array &$skipped ): ?ResolvedFont {
-		if ( ! (bool) $this->settings->get( 'typography.allow_webfont_download', false ) ) {
-			$skipped[] = sprintf(
-				'theme: "%s" is hosted remotely and "Allow downloading webfonts" is off',
-				$family
-			);
-
-			return null;
-		}
-
-		$cached = $this->directory->path( 'fonts/remote-' . Hash::of( $url, 12 ) . '.ttf' );
-
-		if ( is_readable( $cached ) ) {
-			return new ResolvedFont( $role, $family, $cached, $weight, ResolvedFont::STEP_THEME );
-		}
-
-		$response = wp_safe_remote_get(
-			$url,
-			array(
-				'timeout' => 10,
-				'headers' => array( 'Accept' => 'font/ttf,font/otf,application/font-sfnt' ),
-			)
-		);
-
-		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-			$skipped[] = sprintf( 'theme: could not download "%s"', $family );
-
-			return null;
-		}
-
-		$body = (string) wp_remote_retrieve_body( $response );
-
-		if ( strlen( $body ) > FontUpload::MAX_BYTES || ! FontUpload::has_font_magic( $body ) ) {
-			$skipped[] = sprintf( 'theme: the download for "%s" was not a usable TrueType or OpenType file', $family );
-
-			return null;
-		}
-
-		wp_mkdir_p( dirname( $cached ) );
-
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- WP_Filesystem needs a credentials round-trip that a render cannot perform.
-		if ( false === file_put_contents( $cached, $body ) ) {
-			$skipped[] = sprintf( 'theme: could not cache the download for "%s"', $family );
-
-			return null;
-		}
-
-		return new ResolvedFont( $role, $family, $cached, $weight, ResolvedFont::STEP_THEME );
-	}
-
-	/**
-	 * Reads Blocksy's self-hosted font path, defensively.
-	 *
-	 * Blocksy stores typography in its own options, which are not a public API. This
-	 * reads them without assuming any of it exists — SPEC §22 item 4.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @return string Absolute path, or empty.
-	 */
-	private function blocksy_font_path(): string {
-		if ( ! function_exists( 'get_template' ) || 'blocksy' !== get_template() ) {
-			return '';
-		}
-
-		$uploads = wp_upload_dir( null, false );
-		$base    = trailingslashit( $uploads['basedir'] ) . 'blocksy/fonts';
-
-		if ( ! is_dir( $base ) ) {
-			return '';
-		}
-
-		foreach ( self::RASTERISABLE as $extension ) {
-			$found = glob( $base . '/*.' . $extension );
-
-			if ( is_array( $found ) && array() !== $found ) {
-				return (string) $found[0];
-			}
-		}
-
-		return '';
 	}
 
 	/**
@@ -600,7 +482,7 @@ final class FontResolver {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading four magic bytes of a local font file; WP_Filesystem needs a credentials round-trip a render cannot perform.
 		$magic = (string) file_get_contents( $path, false, null, 0, 4 );
 
-		return FontUpload::has_font_magic( $magic );
+		return self::has_font_magic( $magic );
 	}
 
 	/**

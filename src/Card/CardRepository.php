@@ -28,7 +28,6 @@ final class CardRepository {
 	public const META_STALE     = '_scstudio_stale';
 	public const META_DISABLED  = '_scstudio_disabled';
 	public const META_OVERRIDES = '_scstudio_overrides';
-	public const META_AI        = '_scstudio_ai_meta';
 
 	/**
 	 * The override fields an author can set, with their length limits.
@@ -39,16 +38,13 @@ final class CardRepository {
 	 * word — the sanitiser dropping an unknown key looks exactly like the author having
 	 * typed nothing. Adding a field here is what makes it savable.
 	 *
-	 * `ai_prompt` is not author-typed in Phase 1; M10 fills it.
-	 *
 	 * @var array<string, int>
 	 */
 	public const FIELD_LIMITS = array(
-		'headline'  => 300,
-		'subhead'   => 300,
-		'template'  => 64,
-		'alt'       => 300,
-		'ai_prompt' => 2000,
+		'headline' => 300,
+		'subhead'  => 300,
+		'template' => 64,
+		'alt'      => 300,
 	);
 
 	/**
@@ -126,18 +122,16 @@ final class CardRepository {
 				)
 			);
 
-			foreach ( array( self::META_CARD, self::META_AI ) as $key ) {
-				register_post_meta(
-					$post_type,
-					$key,
-					array(
-						'type'          => 'object',
-						'single'        => true,
-						'show_in_rest'  => false,
-						'auth_callback' => '__return_false',
-					)
-				);
-			}
+			register_post_meta(
+				$post_type,
+				self::META_CARD,
+				array(
+					'type'          => 'object',
+					'single'        => true,
+					'show_in_rest'  => false,
+					'auth_callback' => '__return_false',
+				)
+			);
 
 			register_post_meta(
 				$post_type,
@@ -248,7 +242,7 @@ final class CardRepository {
 	 * @return void
 	 */
 	public function delete( int $post_id ): void {
-		foreach ( array( self::META_CARD, self::META_STALE, self::META_AI ) as $key ) {
+		foreach ( array( self::META_CARD, self::META_STALE ) as $key ) {
 			delete_post_meta( $post_id, $key );
 		}
 	}

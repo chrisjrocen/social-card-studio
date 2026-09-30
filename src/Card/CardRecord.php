@@ -24,22 +24,7 @@ final class CardRecord {
 
 	public const SCHEMA = 1;
 
-	public const SOURCE_TEMPLATE      = 'template';
-	public const SOURCE_AI_COPY       = 'ai_copy';
-	public const SOURCE_AI_BACKGROUND = 'ai_background';
-	public const SOURCE_AI_FULL       = 'ai_full';
-
-	/**
-	 * Sources whose output a human approved and paid for.
-	 *
-	 * Per SPEC §9.2 these are never regenerated silently under the default
-	 * regeneration mode.
-	 */
-	public const AI_SOURCES = array(
-		self::SOURCE_AI_COPY,
-		self::SOURCE_AI_BACKGROUND,
-		self::SOURCE_AI_FULL,
-	);
+	public const SOURCE_TEMPLATE = 'template';
 
 	/**
 	 * Constructor.
@@ -77,7 +62,6 @@ final class CardRecord {
 				'attachment_id' => isset( $raw['attachment_id'] ) ? (int) $raw['attachment_id'] : null,
 				'generated_at'  => (int) ( $raw['generated_at'] ?? 0 ),
 				'generated_by'  => (int) ( $raw['generated_by'] ?? 0 ),
-				'variants'      => (array) ( $raw['variants'] ?? array() ),
 			)
 		);
 	}
@@ -127,17 +111,6 @@ final class CardRecord {
 	 */
 	public function alt(): string {
 		return (string) $this->data['alt'];
-	}
-
-	/**
-	 * Whether the card came from an AI mode.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @return bool True for AI-sourced cards.
-	 */
-	public function is_ai(): bool {
-		return in_array( (string) $this->data['source'], self::AI_SOURCES, true );
 	}
 
 	/**

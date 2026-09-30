@@ -2,8 +2,8 @@
 /**
  * GD renderer.
  *
- * Implements the fallback engine of SPEC.md §4.2 and §4.3. GD is the design baseline:
- * no shipped preset may require anything only Imagick can do.
+ * Implements the engine of SPEC.md §4.2 and §4.3. GD is the only shipped engine and
+ * every preset is designed for it.
  *
  * @package ChrxDigital\SocialCardStudio
  */
@@ -59,7 +59,7 @@ final class GdRenderer extends AbstractRenderer {
 	}
 
 	/**
-	 * Lower than Imagick, per SPEC §4.2.
+	 * Default priority; a renderer added through `scstudio_renderers` can outrank it.
 	 *
 	 * @since 0.1.0
 	 *

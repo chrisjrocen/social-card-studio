@@ -464,7 +464,7 @@ abstract class AbstractRenderer implements Renderer {
 		);
 
 		$engine = new TextLayout( $this->metrics() );
-		$layout = $engine->layout( $text, LayoutSpec::from_layer( $layer ), $font, $context->keep_emoji );
+		$layout = $engine->layout( $text, LayoutSpec::from_layer( $layer ), $font );
 
 		if ( $layout->collapsed ) {
 			return;
@@ -671,7 +671,7 @@ abstract class AbstractRenderer implements Renderer {
 	 *
 	 * A drop shadow is a blur, and blurring is priced per pixel. Building the shadow
 	 * on a full-canvas layer costs the same whether the text covers the whole card or
-	 * one line of it — profiling put it at 319 ms of a 690 ms Imagick render, by far
+	 * one line of it — profiling put it at the majority of a render's time, by far
 	 * the single largest cost. Confining it to the text's own bounds plus the blur's
 	 * reach cuts that to the area that can actually be non-transparent.
 	 *

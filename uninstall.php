@@ -27,13 +27,11 @@ function scstudio_uninstall_site() {
 	global $wpdb;
 
 	delete_option( 'scstudio_settings' );
-	delete_option( 'scstudio_ai_settings' );
-	delete_option( 'scstudio_ai_budget' );
 	delete_option( 'scstudio_db_version' );
 	delete_transient( 'scstudio_env' );
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bulk meta cleanup; no core API for delete-by-key-prefix.
-	$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE '\\_scs\\_%'" );
+	$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE '\\_scstudio\\_%'" );
 
 	scstudio_uninstall_rmdir( scstudio_uninstall_card_dir() );
 }
@@ -93,15 +91,10 @@ if ( is_multisite() ) {
 		)
 	);
 
-	foreach ( $scstudio_sites as $scstudio_site_id ) {
-		switch_to_blog( (int) $scstudio_site_id );
-		scstudio_uninstall_site();
-		restore_current_blog();
-	}
-
 	/*
 	 * The events table is network-wide, so it is dropped once, and only if at least
-	 * one site opted in to data deletion.
+	 * one site opted in to data deletion. Each site's opt-in is read before that
+	 * site is cleaned, because cleaning deletes the setting that records it.
 	 */
 	$scstudio_drop_table = false;
 
@@ -113,11 +106,8 @@ if ( is_multisite() ) {
 			$scstudio_drop_table = true;
 		}
 
+		scstudio_uninstall_site();
 		restore_current_blog();
-
-		if ( $scstudio_drop_table ) {
-			break;
-		}
 	}
 
 	if ( $scstudio_drop_table ) {

@@ -133,7 +133,7 @@ final class Yoast extends AbstractIntegration {
 	 * @return mixed Our card URL, or the incoming value.
 	 */
 	public function filter_image( $image ) {
-		$card = $this->card_for_current( '' !== (string) $image );
+		$card = $this->card_for_current();
 
 		return null === $card ? $image : $card->url;
 	}
@@ -148,7 +148,7 @@ final class Yoast extends AbstractIntegration {
 	 * @return mixed "full" when we supplied the image.
 	 */
 	public function filter_size( $size ) {
-		return null === $this->card_for_current( true ) ? $size : 'full';
+		return null === $this->card_for_current() ? $size : 'full';
 	}
 
 	/**
@@ -161,7 +161,7 @@ final class Yoast extends AbstractIntegration {
 	 * @return mixed Our width, or the incoming value.
 	 */
 	public function filter_width( $width ) {
-		$card = $this->card_for_current( true );
+		$card = $this->card_for_current();
 
 		return null === $card || ! $card->has_dimensions() ? $width : $card->width;
 	}
@@ -176,7 +176,7 @@ final class Yoast extends AbstractIntegration {
 	 * @return mixed Our height, or the incoming value.
 	 */
 	public function filter_height( $height ) {
-		$card = $this->card_for_current( true );
+		$card = $this->card_for_current();
 
 		return null === $card || ! $card->has_dimensions() ? $height : $card->height;
 	}

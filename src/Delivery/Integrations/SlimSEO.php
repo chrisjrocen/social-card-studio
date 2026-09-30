@@ -115,8 +115,7 @@ final class SlimSEO extends AbstractIntegration {
 			return $tags;
 		}
 
-		$existing = (string) ( $tags['og:image'] ?? ( is_array( $tags['og:image'] ?? null ) ? 'set' : '' ) );
-		$card     = $this->card_for_current( '' !== $existing );
+		$card = $this->card_for_current();
 
 		if ( null === $card ) {
 			return $tags;

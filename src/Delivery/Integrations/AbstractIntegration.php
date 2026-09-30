@@ -48,23 +48,21 @@ abstract class AbstractIntegration implements SeoIntegration {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param bool $incoming_has_image Whether the host plugin already resolved an image.
-	 *
 	 * @return ResolvedImage|null Our card, or null to leave the host plugin alone.
 	 */
-	protected function card_for_current( bool $incoming_has_image ): ?ResolvedImage {
+	protected function card_for_current(): ?ResolvedImage {
 		$post_id = $this->current_post_id();
 
 		if ( $post_id <= 0 ) {
 			return null;
 		}
 
-		if ( ! $this->priority->should_supply( $post_id, $incoming_has_image, $this->has_manual_image( $post_id ) ) ) {
+		if ( ! $this->priority->should_supply( $post_id, $this->has_manual_image( $post_id ) ) ) {
 			return null;
 		}
 
 		// The SEO plugin's own manual image is excluded from our chain here: if it
-		// were allowed, "replace automatic images" could hand the plugin back the very
+		// were allowed, the priority rule could hand the plugin back the very
 		// image it already had, which looks like the setting doing nothing.
 		$resolved = $this->resolver->resolve( $post_id, false );
 

@@ -32,8 +32,6 @@ final class SettingsSchema {
 			'enabled_post_types'       => array( 'post' ),
 			'default_template'         => 'editorial-left',
 			'per_type_template'        => array(),
-			'priority'                 => 'gap_fill',
-			'regeneration_mode'        => 'auto_template_manual_ai',
 			'triggers'                 => array(
 				'on_publish' => true,
 				'lazy'       => true,
@@ -44,13 +42,9 @@ final class SettingsSchema {
 				'logo_position' => 'top-left',
 			),
 			'typography'               => array(
-				'source'                 => 'theme',
-				'heading'                => '',
-				'body'                   => '',
-				// SPEC §6.1 step 2 requires this to be off until an admin opts in:
-				// downloading a webfont is an outbound request, and §18.3 forbids
-				// those without consent.
-				'allow_webfont_download' => false,
+				'source'  => 'theme',
+				'heading' => '',
+				'body'    => '',
 			),
 			'homepage_card'            => array(
 				'enabled'  => true,
@@ -64,9 +58,7 @@ final class SettingsSchema {
 				'max_bytes'    => 1048576,
 			),
 			'media_library_mode'       => false,
-			'sizes'                    => array( 'og' ),
 			'alt_text_pattern'         => '{{headline}} — {{site_name}}',
-			'emoji'                    => 'strip',
 			'delete_data_on_uninstall' => false,
 		);
 	}
@@ -97,14 +89,6 @@ final class SettingsSchema {
 					'pattern'   => '/^[a-z0-9\-]+$/',
 				),
 				'per_type_template'        => array( 'type' => 'array' ),
-				'priority'                 => array(
-					'type'   => 'enum',
-					'values' => array( 'gap_fill', 'override_auto', 'always' ),
-				),
-				'regeneration_mode'        => array(
-					'type'   => 'enum',
-					'values' => array( 'auto_template_manual_ai', 'auto_all', 'manual_all' ),
-				),
 				'triggers'                 => array(
 					'type'  => 'map',
 					'shape' => array(
@@ -133,19 +117,18 @@ final class SettingsSchema {
 				'typography'               => array(
 					'type'  => 'map',
 					'shape' => array(
-						'source'                 => array(
+						'source'  => array(
 							'type'   => 'enum',
-							'values' => array( 'theme', 'bundled', 'upload' ),
+							'values' => array( 'theme', 'bundled' ),
 						),
-						'heading'                => array(
+						'heading' => array(
 							'type'      => 'string',
 							'maxlength' => 128,
 						),
-						'body'                   => array(
+						'body'    => array(
 							'type'      => 'string',
 							'maxlength' => 128,
 						),
-						'allow_webfont_download' => array( 'type' => 'bool' ),
 					),
 				),
 				'homepage_card'            => array(
@@ -192,21 +175,9 @@ final class SettingsSchema {
 					),
 				),
 				'media_library_mode'       => array( 'type' => 'bool' ),
-				'sizes'                    => array(
-					'type'     => 'array',
-					'maxitems' => 3,
-					'items'    => array(
-						'type'   => 'enum',
-						'values' => array( 'og', 'square', 'pinterest' ),
-					),
-				),
 				'alt_text_pattern'         => array(
 					'type'      => 'string',
 					'maxlength' => 200,
-				),
-				'emoji'                    => array(
-					'type'   => 'enum',
-					'values' => array( 'strip', 'keep_if_supported' ),
 				),
 				'delete_data_on_uninstall' => array( 'type' => 'bool' ),
 			),

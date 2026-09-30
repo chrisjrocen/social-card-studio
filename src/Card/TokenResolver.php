@@ -520,6 +520,6 @@ final class TokenResolver {
 	 * @return string Normalised value.
 	 */
 	private function clean( string $value ): string {
-		return Str::normalize( $value, 'keep_if_supported' === $this->settings->get( 'emoji', 'strip' ) );
+		return Str::normalize( $value );
 	}
 }

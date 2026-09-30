@@ -34,7 +34,7 @@ final class CardDirectory {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param string $sub Optional subdirectory, e.g. 'fonts' or '2026/09'.
+	 * @param string $sub Optional subdirectory, e.g. 'cache' or '2026/09'.
 	 *
 	 * @return string Filesystem path.
 	 */
@@ -95,7 +95,7 @@ final class CardDirectory {
 	public function provision(): array {
 		$errors = array();
 
-		foreach ( array( '', 'fonts', 'cache' ) as $sub ) {
+		foreach ( array( '', 'cache' ) as $sub ) {
 			$dir = $this->path( $sub );
 
 			if ( ! wp_mkdir_p( $dir ) ) {

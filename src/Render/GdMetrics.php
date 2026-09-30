@@ -26,9 +26,9 @@ final class GdMetrics implements MetricsProvider {
 	 * Points per pixel.
 	 *
 	 * GD's `$size` argument is a point size which it rasterises at 96 DPI, while
-	 * Imagick's is a pixel size. Passing the same number to both makes GD render
-	 * about a third larger, which is exactly the kind of silent divergence the
-	 * parity rule in SPEC §2.3 forbids. Every size crossing this boundary is
+	 * the layout engine and the browser preview think in pixels. Passing the same
+	 * number to both makes GD render about a third larger, which is exactly the
+	 * kind of silent divergence the parity rule in SPEC §2.3 forbids. Every size crossing this boundary is
 	 * converted; nothing above this class needs to know GD thinks in points.
 	 */
 	private const POINTS_PER_PIXEL = 0.75;

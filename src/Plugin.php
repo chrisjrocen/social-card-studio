@@ -16,7 +16,6 @@ use ChrxDigital\SocialCardStudio\Admin\ClassicMetabox;
 use ChrxDigital\SocialCardStudio\Admin\EditorAssets;
 use ChrxDigital\SocialCardStudio\Admin\DiagnosticsPage;
 use ChrxDigital\SocialCardStudio\Admin\PostListColumn;
-use ChrxDigital\SocialCardStudio\Admin\TestRender;
 use ChrxDigital\SocialCardStudio\Card\AltText;
 use ChrxDigital\SocialCardStudio\Card\CardRepository;
 use ChrxDigital\SocialCardStudio\Card\InputHasher;
@@ -35,7 +34,6 @@ use ChrxDigital\SocialCardStudio\Generation\OnPublish;
 use ChrxDigital\SocialCardStudio\Generation\Scheduler;
 use ChrxDigital\SocialCardStudio\Render\FontResolver;
 use ChrxDigital\SocialCardStudio\Rest\EditorController;
-use ChrxDigital\SocialCardStudio\Render\FontUpload;
 use ChrxDigital\SocialCardStudio\Render\Legibility;
 use ChrxDigital\SocialCardStudio\Render\MemoryGuard;
 use ChrxDigital\SocialCardStudio\Render\Optimizer;
@@ -237,15 +235,7 @@ final class Plugin {
 
 		$this->container->set(
 			FontResolver::class,
-			static fn ( Container $c ): FontResolver => new FontResolver(
-				$c->get( Settings::class ),
-				$c->get( CardDirectory::class )
-			)
-		);
-
-		$this->container->set(
-			FontUpload::class,
-			static fn ( Container $c ): FontUpload => new FontUpload( $c->get( CardDirectory::class ) )
+			static fn ( Container $c ): FontResolver => new FontResolver( $c->get( Settings::class ) )
 		);
 
 		$this->container->set(
@@ -350,10 +340,7 @@ final class Plugin {
 
 		$this->container->set(
 			Priority::class,
-			static fn ( Container $c ): Priority => new Priority(
-				$c->get( Settings::class ),
-				$c->get( CardRepository::class )
-			)
+			static fn ( Container $c ): Priority => new Priority( $c->get( CardRepository::class ) )
 		);
 
 		$this->container->set(
@@ -375,7 +362,6 @@ final class Plugin {
 				$c->get( CardRepository::class ),
 				$c->get( CardDirectory::class ),
 				$c->get( CardGenerator::class ),
-				$c->get( Settings::class ),
 				static fn (): SeoDetector => $c->get( SeoDetector::class )
 			)
 		);
@@ -493,18 +479,7 @@ final class Plugin {
 				$c->get( Settings::class ),
 				$c->get( CardDirectory::class ),
 				$c->get( Log::class ),
-				$c->get( FontResolver::class ),
-				$c->get( TestRender::class )
-			)
-		);
-
-		$this->container->set(
-			TestRender::class,
-			static fn ( Container $c ): TestRender => new TestRender(
-				$c->get( RendererFactory::class ),
-				$c->get( FontResolver::class ),
-				$c->get( MemoryGuard::class ),
-				$c->get( Settings::class )
+				$c->get( FontResolver::class )
 			)
 		);
 	}

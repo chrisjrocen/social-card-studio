@@ -171,6 +171,10 @@ export function tableMetrics(data) {
  *
  * Only canvas measurement is corrected. tableMetrics stays exact, because that is
  * what the PHP-versus-JavaScript parity test compares.
+ *
+ * Calibrated against Imagick, which is no longer shipped. GD measures a median
+ * 0.9715x the font's exact advances, so against GD this constant errs further toward
+ * breaking early — the safe direction, but it needs re-measuring against a browser.
  */
 const CANVAS_WIDTH_CORRECTION = 1.005;
 

@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Every coordinate is absolute within the card, and every baseline is a baseline —
  * not a bounding-box top. Renderers draw from these numbers without re-deriving
- * anything, which is what keeps Imagick and GD output aligned.
+ * anything, which is what keeps server output aligned with the editor preview.
  *
  * @since 0.1.0
  */

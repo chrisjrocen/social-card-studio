@@ -337,12 +337,6 @@ export default function CardPanel() {
 				) }
 			</PanelRow>
 
-			{ /*
-			  * AI section slot. M11 fills this with the three buttons from SPEC §14
-			  * item 5, their cost estimates and the remaining workspace budget.
-			  */ }
-			<div className="scstudio-ai-slot" />
-
 			<TextareaControl
 				label={ __( 'Alt text', 'social-card-studio' ) }
 				value={ altText }

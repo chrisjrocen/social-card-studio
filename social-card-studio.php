@@ -75,7 +75,7 @@ function scstudio_requirement_failures() {
 	}
 
 	if ( ! scstudio_has_usable_image_library() ) {
-		$failures[] = __( 'An image library with FreeType support is required, and neither Imagick nor GD provides one on this server. Ask your host to enable the GD extension with FreeType support.', 'social-card-studio' );
+		$failures[] = __( 'The GD image library with FreeType support is required, and this server does not provide it. Ask your host to enable the GD extension with FreeType support.', 'social-card-studio' );
 	}
 
 	return $failures;
@@ -84,31 +84,15 @@ function scstudio_requirement_failures() {
 /**
  * Reports whether the server can rasterise text into an image.
  *
- * FreeType is the part that matters: GD and Imagick can both exist without it, and a
- * card renderer that cannot draw text is of no use. See SPEC.md §4.3.
+ * FreeType is the part that matters: GD can exist without it, and a card renderer
+ * that cannot draw text is of no use. See SPEC.md §4.3.
  *
  * @since 0.1.0
  *
- * @return bool True when Imagick or GD can draw TrueType text.
+ * @return bool True when GD can draw TrueType text.
  */
 function scstudio_has_usable_image_library() {
-	if ( extension_loaded( 'gd' ) && function_exists( 'imagettftext' ) ) {
-		return true;
-	}
-
-	if ( extension_loaded( 'imagick' ) && class_exists( 'Imagick' ) ) {
-		try {
-			$formats = Imagick::queryFormats( 'TTF' );
-
-			if ( ! empty( $formats ) ) {
-				return true;
-			}
-		} catch ( Exception $e ) {
-			return false;
-		}
-	}
-
-	return false;
+	return extension_loaded( 'gd' ) && function_exists( 'imagettftext' );
 }
 
 /**

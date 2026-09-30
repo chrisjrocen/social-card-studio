@@ -3,7 +3,7 @@
  * Text measurement abstraction.
  *
  * Implements the measurement seam required by SPEC.md §6.3 step 2a, so that
- * ImagickRenderer, GdRenderer and the parity harness all drive one layout engine.
+ * GdRenderer and the parity tests both drive one layout engine.
  *
  * @package ChrxDigital\SocialCardStudio
  */

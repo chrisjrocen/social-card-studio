@@ -180,7 +180,6 @@ final class Settings {
 				'brand'             => $settings['brand'] ?? array(),
 				'typography'        => $settings['typography'] ?? array(),
 				'output'            => $settings['output'] ?? array(),
-				'emoji'             => $settings['emoji'] ?? '',
 				'default_template'  => $settings['default_template'] ?? '',
 				'per_type_template' => $settings['per_type_template'] ?? array(),
 				'alt_text_pattern'  => $settings['alt_text_pattern'] ?? '',

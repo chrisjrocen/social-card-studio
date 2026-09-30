@@ -120,7 +120,7 @@ final class SEOFramework extends AbstractIntegration {
 			return $args;
 		}
 
-		$card = $this->card_for_current( '' !== (string) ( $args['image'] ?? '' ) );
+		$card = $this->card_for_current();
 
 		if ( null === $card ) {
 			return $args;

@@ -19,8 +19,8 @@ defined( 'ABSPATH' ) || exit;
  * Draws a Card Document.
  *
  * Every implementation consumes the identical document and the identical TextLayout
- * results; only the drawing primitives differ (SPEC §4.2). That is what allows GD to
- * be the design baseline while Imagick is merely better at the same job.
+ * results; only the drawing primitives differ (SPEC §4.2). GD is the shipped engine;
+ * another can be added through the `scstudio_renderers` filter.
  *
  * @since 0.1.0
  */
@@ -53,7 +53,7 @@ interface Renderer {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @return string Identifier, e.g. "imagick-7.1.1".
+	 * @return string Identifier, e.g. "gd-2.3.3".
 	 */
 	public function id(): string;
 

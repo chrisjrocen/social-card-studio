@@ -35,7 +35,6 @@ final class RenderContext {
 	 * @param array<string, string> $tokens     Resolved tokens for this post.
 	 * @param FontResolver          $fonts      Font resolution chain.
 	 * @param MemoryGuard           $memory     Memory headroom guard.
-	 * @param bool                  $keep_emoji Whether the emoji policy keeps emoji.
 	 * @param int                   $post_id    Post being rendered, 0 for the homepage card.
 	 * @param int                   $quality    Starting JPEG quality.
 	 */
@@ -43,7 +42,6 @@ final class RenderContext {
 		public readonly array $tokens,
 		public readonly FontResolver $fonts,
 		public readonly MemoryGuard $memory,
-		public readonly bool $keep_emoji = false,
 		public readonly int $post_id = 0,
 		public readonly int $quality = 82
 	) {}

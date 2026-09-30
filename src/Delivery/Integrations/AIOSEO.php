@@ -17,10 +17,9 @@ defined( 'ABSPATH' ) || exit;
  * Supplies cards to All in One SEO.
  *
  * AIOSEO keeps its post settings in its own table rather than post meta, so the
- * manual-image check goes through its API when that is available and falls back to
- * assuming nothing was set. Assuming *nothing* is the safe direction: it makes
- * override_auto behave like gap_fill for that post rather than overwriting a choice
- * we could not read.
+ * manual-image check goes through its API when that is available. When the record
+ * cannot be read, the check reports no manual image, so our card replaces whatever
+ * AIOSEO would have emitted for that post.
  *
  * @since 0.1.0
  */
@@ -167,7 +166,7 @@ final class AIOSEO extends AbstractIntegration {
 			return $tags;
 		}
 
-		$card = $this->card_for_current( '' !== (string) ( $tags[ $image ] ?? '' ) );
+		$card = $this->card_for_current();
 
 		if ( null === $card ) {
 			return $tags;

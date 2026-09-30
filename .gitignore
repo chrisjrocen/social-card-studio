@@ -1,9 +1,45 @@
+# Dependencies
 /vendor/
-/node_modules/
+node_modules/
+
+# Build output
 /build/
+
+# Tool caches
 .phpunit.result.cache
+.phpunit.cache/
 .phpcs.cache
+.php-cs-fixer.cache
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Local tool config overrides (the *.dist files are committed)
 phpcs.xml
 phpstan.neon
 phpunit.xml
+
+# Test output
+/coverage/
+/test-results/
+/playwright-report/
+/artifacts/
+
+# Local dev scratch
+/.parity-harness/
+.env
+.env.*
+*.log
+*.zip
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+*~
 .DS_Store
+Thumbs.db
+
+# Planning docs (kept locally, not published)
+/PROMPTS.md
+/SPEC.md

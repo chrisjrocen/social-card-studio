@@ -123,7 +123,7 @@ final class SEOPress extends AbstractIntegration {
 	 * @return mixed Our card URL, or the incoming value.
 	 */
 	public function filter_image( $image ) {
-		$card = $this->card_for_current( '' !== (string) $image );
+		$card = $this->card_for_current();
 
 		return null === $card ? $image : $card->url;
 	}

@@ -33,7 +33,7 @@ final class RenderResult {
 	 * @param int      $width        Pixel width.
 	 * @param int      $height       Pixel height.
 	 * @param string   $mime         Output MIME type.
-	 * @param string   $engine       Engine identifier, e.g. "imagick-7.1.1".
+	 * @param string   $engine       Engine identifier, e.g. "gd-2.3.3".
 	 * @param int      $quality      Quality the encoder settled on.
 	 * @param float    $duration_ms  Wall-clock render time.
 	 * @param int      $peak_bytes   Peak memory during the render.

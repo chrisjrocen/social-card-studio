@@ -16,11 +16,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Reports what this server can actually do.
  *
- * Probing Imagick's format list and GD's feature set is not free, so results are
- * cached in a transient. The cache is versioned by SCSTUDIO_VERSION and PHP_VERSION so a
- * plugin update or a PHP upgrade re-probes rather than serving a stale answer — the
- * failure mode being a site that upgraded PHP, gained Imagick, and is still told it
- * has none.
+ * Probing GD's feature set is not free, so results are cached in a transient. The
+ * cache is versioned by SCSTUDIO_VERSION and PHP_VERSION so a plugin update or a PHP
+ * upgrade re-probes rather than serving a stale answer — the failure mode being a
+ * site that upgraded PHP, gained FreeType, and is still told it has none.
  *
  * @since 0.1.0
  */
@@ -83,14 +82,10 @@ final class Env {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @return string One of 'imagick', 'gd' or 'none'.
+	 * @return string Either 'gd' or 'none'.
 	 */
 	public function engine(): string {
 		$env = $this->all();
-
-		if ( $env['imagick']['usable'] ) {
-			return 'imagick';
-		}
 
 		if ( $env['gd']['usable'] ) {
 			return 'gd';
@@ -140,70 +135,15 @@ final class Env {
 			'probed_at'        => time(),
 			'php'              => PHP_VERSION,
 			'wp'               => get_bloginfo( 'version' ),
-			'imagick'          => $this->probe_imagick(),
 			'gd'               => $this->probe_gd(),
 			'memory_limit'     => (string) ini_get( 'memory_limit' ),
 			'wp_memory_limit'  => defined( 'WP_MEMORY_LIMIT' ) ? (string) WP_MEMORY_LIMIT : '',
 			'max_execution'    => (int) ini_get( 'max_execution_time' ),
 			'upload_max'       => (string) ini_get( 'upload_max_filesize' ),
-			'has_get_lock'     => $this->probe_get_lock(),
 			'external_http'    => ! ( defined( 'WP_HTTP_BLOCK_EXTERNAL' ) && WP_HTTP_BLOCK_EXTERNAL ),
 			'is_multisite'     => is_multisite(),
 			'permalink_pretty' => '' !== (string) get_option( 'permalink_structure' ),
 		);
-	}
-
-	/**
-	 * Probes Imagick.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @return array<string, mixed> Imagick capability detail.
-	 */
-	private function probe_imagick(): array {
-		$result = array(
-			'loaded'   => extension_loaded( 'imagick' ) && class_exists( 'Imagick' ),
-			'usable'   => false,
-			'version'  => '',
-			'freetype' => false,
-			'formats'  => array(),
-			'reason'   => '',
-		);
-
-		if ( ! $result['loaded'] ) {
-			$result['reason'] = 'extension not loaded';
-
-			return $result;
-		}
-
-		try {
-			$version = \Imagick::getVersion();
-			$raw     = is_array( $version ) ? (string) ( $version['versionString'] ?? '' ) : '';
-
-			$result['version'] = $raw;
-
-			if ( preg_match( '/ImageMagick (\d+\.\d+\.\d+)/', $raw, $m ) ) {
-				$result['version'] = $m[1];
-			}
-
-			$result['freetype'] = ! empty( \Imagick::queryFormats( 'TTF' ) );
-			$result['formats']  = array_values( array_intersect( \Imagick::queryFormats(), array( 'JPEG', 'PNG', 'WEBP', 'TTF', 'OTF' ) ) );
-
-			// SPEC §4.3 requires Imagick >= 6.9 with FreeType before it is preferred.
-			$version_ok = '' === $result['version'] || version_compare( $result['version'], '6.9', '>=' );
-
-			$result['usable'] = $result['freetype'] && $version_ok;
-
-			if ( ! $result['freetype'] ) {
-				$result['reason'] = 'no FreeType/TTF support';
-			} elseif ( ! $version_ok ) {
-				$result['reason'] = 'ImageMagick older than 6.9';
-			}
-		} catch ( \Throwable $e ) {
-			$result['reason'] = 'probe failed: ' . $e->getMessage();
-		}
-
-		return $result;
 	}
 
 	/**
@@ -239,37 +179,6 @@ final class Env {
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Reports whether MySQL GET_LOCK is available.
-	 *
-	 * The spend budget ledger (SPEC §13.9.1) relies on it, and falls back to a
-	 * compare-and-swap when it is missing. Diagnostics surfaces which one is in play.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @return bool True when GET_LOCK returned a lock.
-	 */
-	private function probe_get_lock(): bool {
-		global $wpdb;
-
-		if ( ! $wpdb instanceof \wpdb ) {
-			return false;
-		}
-
-		$suppress = $wpdb->suppress_errors( true );
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Capability probe, cached by the caller.
-		$acquired = $wpdb->get_var( "SELECT GET_LOCK('scstudio_probe', 0)" );
-
-		if ( '1' === (string) $acquired ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Releasing the probe lock.
-			$wpdb->query( "SELECT RELEASE_LOCK('scstudio_probe')" );
-		}
-
-		$wpdb->suppress_errors( $suppress );
-
-		return '1' === (string) $acquired;
 	}
 
 	/**

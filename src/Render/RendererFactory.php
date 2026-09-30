@@ -75,7 +75,7 @@ final class RendererFactory {
 
 		throw new RenderException(
 			RenderException::REASON_NO_ENGINE,
-			'Neither Imagick nor GD can draw text on this server.'
+			'GD with FreeType is not available, so this server cannot draw text.'
 		);
 	}
 
@@ -99,12 +99,12 @@ final class RendererFactory {
 	/**
 	 * Builds a specific renderer by identifier.
 	 *
-	 * Used by the parity tests and the Diagnostics test render, which need to drive
-	 * one engine deliberately rather than whichever the server prefers.
+	 * Used by the tests, which need to drive one engine deliberately rather than
+	 * whichever the server prefers.
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param string $id Either "imagick" or "gd".
+	 * @param string $id Renderer identifier prefix, e.g. "gd".
 	 *
 	 * @throws RenderException When that engine is unavailable here.
 	 *
@@ -144,7 +144,6 @@ final class RendererFactory {
 		);
 
 		$candidates = array(
-			new ImagickRenderer( $this->tokens, $this->optimizer, $this->legibility, $roots ),
 			new GdRenderer( $this->tokens, $this->optimizer, $this->legibility, $roots ),
 		);
 

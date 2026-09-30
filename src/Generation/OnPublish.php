@@ -2,8 +2,8 @@
 /**
  * On-publish trigger.
  *
- * Implements the "on publish/update" row of SPEC.md §11 and the regeneration policy of
- * §9.2.
+ * Implements the "on publish/update" row of SPEC.md §11. Per §9.2, a card whose inputs
+ * changed is always regenerated in the background.
  *
  * @package ChrxDigital\SocialCardStudio
  */
@@ -12,7 +12,6 @@ declare( strict_types=1 );
 
 namespace ChrxDigital\SocialCardStudio\Generation;
 
-use ChrxDigital\SocialCardStudio\Card\CardRecord;
 use ChrxDigital\SocialCardStudio\Card\CardRepository;
 use ChrxDigital\SocialCardStudio\Settings\Settings;
 use WP_Post;
@@ -30,10 +29,6 @@ defined( 'ABSPATH' ) || exit;
  * @since 0.1.0
  */
 final class OnPublish {
-
-	public const MODE_AUTO_TEMPLATE = 'auto_template_manual_ai';
-	public const MODE_AUTO_ALL      = 'auto_all';
-	public const MODE_MANUAL_ALL    = 'manual_all';
 
 	/**
 	 * Constructor.
@@ -171,53 +166,7 @@ final class OnPublish {
 			return false;
 		}
 
-		if ( $this->repository->is_disabled( $post->ID ) ) {
-			return false;
-		}
-
-		return $this->regeneration_allows( $post->ID );
-	}
-
-	/**
-	 * Whether the regeneration policy permits replacing this post's card.
-	 *
-	 * SPEC §9.2: an AI-generated card is never replaced silently under the default
-	 * mode. Someone paid for that image and a human approved it, so it is marked stale
-	 * and left alone rather than being quietly swapped for a different one.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @param int $post_id Post ID.
-	 *
-	 * @return bool True when a regeneration may be queued.
-	 */
-	public function regeneration_allows( int $post_id ): bool {
-		$record = $this->repository->get( $post_id );
-
-		// No card yet: nothing to protect.
-		if ( null === $record ) {
-			return true;
-		}
-
-		$mode = (string) $this->settings->get( 'regeneration_mode', self::MODE_AUTO_TEMPLATE );
-
-		if ( self::MODE_AUTO_ALL === $mode ) {
-			return true;
-		}
-
-		if ( self::MODE_MANUAL_ALL === $mode ) {
-			$this->repository->mark_stale( $post_id );
-
-			return false;
-		}
-
-		if ( $record->is_ai() ) {
-			$this->repository->mark_stale( $post_id );
-
-			return false;
-		}
-
-		return true;
+		return ! $this->repository->is_disabled( $post->ID );
 	}
 
 	/**
@@ -238,40 +187,5 @@ final class OnPublish {
 		}
 
 		return true;
-	}
-
-	/**
-	 * The regeneration modes and how they read in the settings UI.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @return array<string, array{label: string, description: string}> Mode descriptions.
-	 */
-	public static function modes(): array {
-		return array(
-			self::MODE_AUTO_TEMPLATE => array(
-				'label'       => __( 'Regenerate template cards, leave AI cards alone (recommended)', 'social-card-studio' ),
-				'description' => __( 'Cards drawn from a template are redrawn whenever the post changes. Cards made with AI are marked as needing attention instead, because they cost money and someone approved that particular image.', 'social-card-studio' ),
-			),
-			self::MODE_AUTO_ALL      => array(
-				'label'       => __( 'Regenerate everything automatically', 'social-card-studio' ),
-				'description' => __( 'Redraw every card when its post changes, including AI ones. This spends credits without asking, and replaces images a person approved.', 'social-card-studio' ),
-			),
-			self::MODE_MANUAL_ALL    => array(
-				'label'       => __( 'Never regenerate on its own', 'social-card-studio' ),
-				'description' => __( 'Cards are only ever created or replaced when you ask. Changed posts are flagged as needing attention.', 'social-card-studio' ),
-			),
-		);
-	}
-
-	/**
-	 * The card sources considered AI-generated.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @return string[] Source identifiers.
-	 */
-	public static function ai_sources(): array {
-		return CardRecord::AI_SOURCES;
 	}
 }

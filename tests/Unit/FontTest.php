@@ -1,9 +1,9 @@
 <?php
 /**
- * Bundled font and upload validation tests.
+ * Bundled font and font-signature tests.
  *
  * Covers SPEC.md §6.1 — the bundle that guarantees the chain always terminates, and
- * the upload rules that keep a C font parser from being handed arbitrary bytes.
+ * the signature check that keeps a C font parser from being handed arbitrary bytes.
  *
  * @package ChrxDigital\SocialCardStudio
  */
@@ -13,9 +13,8 @@ declare( strict_types=1 );
 namespace ChrxDigital\SocialCardStudio\Tests\Unit;
 
 use ChrxDigital\SocialCardStudio\Render\BundledFonts;
-use ChrxDigital\SocialCardStudio\Render\FontUpload;
+use ChrxDigital\SocialCardStudio\Render\FontResolver;
 use ChrxDigital\SocialCardStudio\Render\GdMetrics;
-use ChrxDigital\SocialCardStudio\Render\ImagickMetrics;
 use ChrxDigital\SocialCardStudio\Render\ResolvedFont;
 use PHPUnit\Framework\TestCase;
 
@@ -62,7 +61,7 @@ final class FontTest extends TestCase {
 
 		foreach ( is_array( $paths ) ? $paths : array() as $path ) {
 			$this->assertTrue(
-				FontUpload::has_font_magic( (string) file_get_contents( $path, false, null, 0, 4 ) ),
+				FontResolver::has_font_magic( (string) file_get_contents( $path, false, null, 0, 4 ) ),
 				basename( $path ) . ' is not a valid font'
 			);
 		}
@@ -118,16 +117,16 @@ final class FontTest extends TestCase {
 	}
 
 	/**
-	 * The bundled fonts can be opened by whichever engine this server has.
+	 * The bundled fonts can be opened by GD.
 	 *
 	 * @return void
 	 */
-	public function test_bundled_fonts_are_readable_by_an_engine(): void {
+	public function test_bundled_fonts_are_readable_by_gd(): void {
 		$path = BundledFonts::directory() . '/Inter-Regular.ttf';
 
 		$this->assertTrue(
-			GdMetrics::can_read( $path ) || ImagickMetrics::can_read( $path ),
-			'neither GD nor Imagick could open the bundled font'
+			GdMetrics::can_read( $path ),
+			'GD could not open the bundled font'
 		);
 	}
 
@@ -162,7 +161,7 @@ final class FontTest extends TestCase {
 	 * @return void
 	 */
 	public function test_valid_font_magic( string $bytes ): void {
-		$this->assertTrue( FontUpload::has_font_magic( $bytes ) );
+		$this->assertTrue( FontResolver::has_font_magic( $bytes ) );
 	}
 
 	/**
@@ -189,7 +188,7 @@ final class FontTest extends TestCase {
 	 * @return void
 	 */
 	public function test_invalid_font_magic( string $bytes ): void {
-		$this->assertFalse( FontUpload::has_font_magic( $bytes ) );
+		$this->assertFalse( FontResolver::has_font_magic( $bytes ) );
 	}
 
 	/**
@@ -208,24 +207,5 @@ final class FontTest extends TestCase {
 			array( '' ),
 			array( 'PK' ),                   // A zip.
 		);
-	}
-
-	/**
-	 * The size ceiling matches the spec.
-	 *
-	 * @return void
-	 */
-	public function test_size_ceiling(): void {
-		$this->assertSame( 5 * 1024 * 1024, FontUpload::MAX_BYTES );
-	}
-
-	/**
-	 * Only .ttf and .otf are listed as acceptable.
-	 *
-	 * @return void
-	 */
-	public function test_accepted_extensions(): void {
-		$this->assertSame( array( 'ttf', 'otf' ), FontUpload::EXTENSIONS );
-		$this->assertNotContains( 'woff2', FontUpload::EXTENSIONS );
 	}
 }

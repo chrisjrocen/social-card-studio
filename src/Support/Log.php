@@ -25,27 +25,21 @@ defined( 'ABSPATH' ) || exit;
 final class Log {
 
 	/**
-	 * Event types, per SPEC §5.4 and §13.9.
+	 * Event types, per SPEC §5.4.
 	 */
-	public const TYPE_RENDER_OK       = 'render_ok';
-	public const TYPE_RENDER_ERROR    = 'render_error';
-	public const TYPE_DEGRADED        = 'degraded_render';
-	public const TYPE_BACKFILL        = 'backfill';
-	public const TYPE_AI_CALL         = 'ai_call';
-	public const TYPE_BUDGET_GRANT    = 'budget_grant';
-	public const TYPE_BUDGET_THRESHLD = 'budget_threshold';
+	public const TYPE_RENDER_OK    = 'render_ok';
+	public const TYPE_RENDER_ERROR = 'render_error';
+	public const TYPE_DEGRADED     = 'degraded_render';
+	public const TYPE_BACKFILL     = 'backfill';
 
 	/**
 	 * Status values, per SPEC §5.4.
 	 */
-	public const STATUS_OK           = 'ok';
-	public const STATUS_ERROR        = 'error';
-	public const STATUS_BLOCKED      = 'blocked';
-	public const STATUS_RATE_LIMITED = 'rate_limited';
-	public const STATUS_CAPPED       = 'capped';
+	public const STATUS_OK    = 'ok';
+	public const STATUS_ERROR = 'error';
 
 	/**
-	 * Message length ceiling. Long provider errors are truncated rather than refused.
+	 * Message length ceiling. Long error messages are truncated rather than refused.
 	 */
 	private const MAX_MESSAGE = 2000;
 
@@ -56,9 +50,8 @@ final class Log {
 	 *
 	 * @param string               $type   One of the TYPE_* constants.
 	 * @param string               $status One of the STATUS_* constants.
-	 * @param array<string, mixed> $data   Optional columns: post_id, user_id, provider,
-	 *                                     model, mode, credits, cost_usd, duration_ms,
-	 *                                     message, prompt_hash.
+	 * @param array<string, mixed> $data   Optional columns: post_id, user_id, mode,
+	 *                                     duration_ms, message.
 	 *
 	 * @return int Inserted row ID, or 0 when the write did not happen.
 	 */
@@ -81,14 +74,9 @@ final class Log {
 			'status'      => substr( $status, 0, 16 ),
 			'post_id'     => isset( $data['post_id'] ) ? (int) $data['post_id'] : null,
 			'user_id'     => isset( $data['user_id'] ) ? (int) $data['user_id'] : null,
-			'provider'    => isset( $data['provider'] ) ? substr( (string) $data['provider'], 0, 32 ) : null,
-			'model'       => isset( $data['model'] ) ? substr( (string) $data['model'], 0, 64 ) : null,
 			'mode'        => isset( $data['mode'] ) ? substr( (string) $data['mode'], 0, 32 ) : null,
-			'credits'     => isset( $data['credits'] ) ? (float) $data['credits'] : null,
-			'cost_usd'    => isset( $data['cost_usd'] ) ? (float) $data['cost_usd'] : null,
 			'duration_ms' => isset( $data['duration_ms'] ) ? (int) $data['duration_ms'] : null,
 			'message'     => $message,
-			'prompt_hash' => isset( $data['prompt_hash'] ) ? substr( (string) $data['prompt_hash'], 0, 40 ) : null,
 			'created_at'  => current_time( 'mysql', true ),
 		);
 

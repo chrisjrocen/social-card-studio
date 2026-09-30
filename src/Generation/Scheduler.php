@@ -119,11 +119,13 @@ final class Scheduler {
 		}
 
 		// Already queued for this post: queueing again would render it twice.
-		if ( as_has_scheduled_action( self::HOOK_GENERATE, $args, self::GROUP ) ) {
+		if ( as_has_scheduled_action( self::HOOK_GENERATE, array( $args ), self::GROUP ) ) {
 			return false;
 		}
 
-		return as_enqueue_async_action( self::HOOK_GENERATE, $args, self::GROUP ) > 0;
+		// Wrapped, as for WP-Cron: Action Scheduler spreads the argument array into
+		// positional parameters, and the handler expects the whole array as one.
+		return as_enqueue_async_action( self::HOOK_GENERATE, array( $args ), self::GROUP ) > 0;
 	}
 
 	/**
@@ -166,11 +168,11 @@ final class Scheduler {
 			return $this->schedule_cron( self::HOOK_BACKFILL, $args, $delay );
 		}
 
-		if ( as_has_scheduled_action( self::HOOK_BACKFILL, $args, self::GROUP ) ) {
+		if ( as_has_scheduled_action( self::HOOK_BACKFILL, array( $args ), self::GROUP ) ) {
 			return false;
 		}
 
-		return as_schedule_single_action( time() + $delay, self::HOOK_BACKFILL, $args, self::GROUP ) > 0;
+		return as_schedule_single_action( time() + $delay, self::HOOK_BACKFILL, array( $args ), self::GROUP ) > 0;
 	}
 
 	/**

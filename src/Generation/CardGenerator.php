@@ -203,7 +203,6 @@ final class CardGenerator {
 					$tokens,
 					$this->fonts,
 					$this->memory,
-					'keep_if_supported' === $this->settings->get( 'emoji', 'strip' ),
 					0,
 					(int) $this->settings->get( 'output.quality', 82 )
 				)
@@ -289,7 +288,6 @@ final class CardGenerator {
 					$tokens,
 					$this->fonts,
 					$this->memory,
-					'keep_if_supported' === $this->settings->get( 'emoji', 'strip' ),
 					$post_id,
 					(int) $this->settings->get( 'output.quality', 82 )
 				)

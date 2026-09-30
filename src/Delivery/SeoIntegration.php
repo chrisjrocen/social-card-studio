@@ -18,8 +18,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * `has_manual_image()` is the load-bearing method. It reads the host plugin's own
  * meta key to answer "did a human choose this picture, or did the plugin derive it?"
- * — and that distinction is the entire difference between `override_auto` doing what
- * a site owner expects and it overwriting a deliberate editorial choice.
+ * — and that distinction is the entire difference between the priority rule doing
+ * what a site owner expects and it overwriting a deliberate editorial choice.
  *
  * @since 0.1.0
  */

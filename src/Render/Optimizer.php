@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * Walks the quality ladder until the card fits its byte budget.
  *
  * WebP and AVIF are impossible here by construction, not by configuration. The
- * renderers encode through Imagick and GD directly rather than through
+ * renderer encodes through GD directly rather than through
  * WP_Image_Editor, so the site's media preferences never reach this code and there is
  * no `image_editor_output_format` filter to leak through — which is the outcome
  * SPEC §7.2 asks for, reached by removing the pathway instead of guarding it.

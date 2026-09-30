@@ -66,9 +66,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          # GD with FreeType and Imagick are what the renderer needs; the matrix runs
-          # with both so a GD-only regression is caught by the engine tests in M4.
-          extensions: gd, imagick, intl, mbstring
+          # GD with FreeType is the only engine the renderer uses.
+          extensions: gd, intl, mbstring
           coverage: none
           tools: composer:v2
 

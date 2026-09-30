@@ -43,17 +43,15 @@ final class DiagnosticsPage {
 	 * @param Env           $env       Capability detection.
 	 * @param Settings      $settings  Settings store.
 	 * @param CardDirectory $directory Uploads directory.
-	 * @param Log           $log         Event log.
-	 * @param FontResolver  $fonts       Font resolution chain.
-	 * @param TestRender    $test_render Sample renderer.
+	 * @param Log           $log       Event log.
+	 * @param FontResolver  $fonts     Font resolution chain.
 	 */
 	public function __construct(
 		private readonly Env $env,
 		private readonly Settings $settings,
 		private readonly CardDirectory $directory,
 		private readonly Log $log,
-		private readonly FontResolver $fonts,
-		private readonly TestRender $test_render
+		private readonly FontResolver $fonts
 	) {}
 
 	/**
@@ -149,7 +147,6 @@ final class DiagnosticsPage {
 		$this->render_engine_summary( $engine );
 
 		$this->open_table( __( 'Image libraries', 'social-card-studio' ) );
-		$this->render_imagick_rows( (array) $env['imagick'] );
 		$this->render_gd_rows( (array) $env['gd'] );
 		$this->close_table();
 
@@ -163,13 +160,6 @@ final class DiagnosticsPage {
 			0 === (int) $env['max_execution'] ? __( 'unlimited', 'social-card-studio' ) : (string) $env['max_execution'] . 's'
 		);
 		$this->row( __( 'upload_max_filesize', 'social-card-studio' ), (string) $env['upload_max'] );
-		$this->row(
-			__( 'MySQL GET_LOCK', 'social-card-studio' ),
-			$env['has_get_lock']
-				? $this->yes( __( 'available', 'social-card-studio' ) )
-				: $this->warn( __( 'unavailable — the AI spend ledger will use its compare-and-swap fallback', 'social-card-studio' ) ),
-			true
-		);
 		$this->row(
 			__( 'External HTTP requests', 'social-card-studio' ),
 			$env['external_http']
@@ -213,7 +203,6 @@ final class DiagnosticsPage {
 		$this->close_table();
 
 		$this->render_fonts();
-		$this->render_test_render();
 		$this->render_stubs();
 		$this->render_events();
 		$this->render_flush_button();
@@ -231,50 +220,15 @@ final class DiagnosticsPage {
 	 * @return void
 	 */
 	private function render_engine_summary( string $engine ): void {
-		if ( 'imagick' === $engine ) {
+		if ( 'gd' === $engine ) {
 			$class   = 'notice-success';
-			$message = __( 'Rendering with Imagick. Gradients, rounded masks and drop shadows are drawn natively.', 'social-card-studio' );
-		} elseif ( 'gd' === $engine ) {
-			$class   = 'notice-info';
-			$message = __( 'Rendering with GD. This is the supported baseline — every shipped template is designed for it. Imagick would give slightly better text hinting and faster gradients.', 'social-card-studio' );
+			$message = __( 'Rendering with GD. Every shipped template is designed for it.', 'social-card-studio' );
 		} else {
 			$class   = 'notice-error';
-			$message = __( 'No usable image library. Neither Imagick nor GD offers FreeType text support, so no cards can be rendered. Ask your host to enable the GD extension with FreeType.', 'social-card-studio' );
+			$message = __( 'No usable image library. GD with FreeType text support is missing, so no cards can be rendered. Ask your host to enable the GD extension with FreeType.', 'social-card-studio' );
 		}
 
 		echo '<div class="notice ' . esc_attr( $class ) . ' inline"><p>' . esc_html( $message ) . '</p></div>';
-	}
-
-	/**
-	 * Renders the Imagick rows.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @param array<string, mixed> $imagick Imagick probe data.
-	 *
-	 * @return void
-	 */
-	private function render_imagick_rows( array $imagick ): void {
-		$value = $imagick['loaded']
-			? sprintf(
-				/* translators: %s: ImageMagick version. */
-				__( 'present (ImageMagick %s)', 'social-card-studio' ),
-				'' !== $imagick['version'] ? $imagick['version'] : __( 'unknown version', 'social-card-studio' )
-			)
-			: __( 'not installed', 'social-card-studio' );
-
-		$this->row( __( 'Imagick', 'social-card-studio' ), $value );
-		$this->row(
-			__( 'Imagick FreeType', 'social-card-studio' ),
-			$imagick['freetype']
-				? $this->yes( __( 'yes', 'social-card-studio' ) )
-				: $this->warn( '' !== $imagick['reason'] ? (string) $imagick['reason'] : __( 'no', 'social-card-studio' ) ),
-			true
-		);
-
-		if ( ! empty( $imagick['formats'] ) ) {
-			$this->row( __( 'Imagick formats', 'social-card-studio' ), implode( ', ', (array) $imagick['formats'] ) );
-		}
 	}
 
 	/**
@@ -333,13 +287,6 @@ final class DiagnosticsPage {
 		);
 
 		$this->row(
-			__( 'Webfont downloads', 'social-card-studio' ),
-			$this->settings->get( 'typography.allow_webfont_download', false )
-				? __( 'allowed', 'social-card-studio' )
-				: __( 'off — remote theme fonts will be skipped', 'social-card-studio' )
-		);
-
-		$this->row(
 			__( 'Complex-script shaping', 'social-card-studio' ),
 			Script::can_shape()
 				? $this->yes( __( 'available', 'social-card-studio' ) )
@@ -379,78 +326,6 @@ final class DiagnosticsPage {
 	}
 
 	/**
-	 * Renders a sample card inline, with its timing and memory cost.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @return void
-	 */
-	private function render_test_render(): void {
-		echo '<h2>' . esc_html__( 'Test render', 'social-card-studio' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Draws a sample card using this site\'s real fonts, brand colour and image library — the same path a published post takes.', 'social-card-studio' ) . '</p>';
-
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only flag; the render itself is nonce-checked below.
-		$requested = isset( $_GET['scstudio_test_render'] );
-
-		if ( ! $requested ) {
-			echo '<form method="get" action="' . esc_url( admin_url( 'admin.php' ) ) . '">';
-			echo '<input type="hidden" name="page" value="' . esc_attr( self::SLUG ) . '" />';
-			echo '<input type="hidden" name="scstudio_test_render" value="1" />';
-			submit_button( __( 'Run test render', 'social-card-studio' ), 'secondary', 'submit', false );
-			echo '</form>';
-
-			return;
-		}
-
-		$outcome = $this->test_render->run();
-
-		if ( ! $outcome['ok'] ) {
-			echo '<div class="notice notice-error inline"><p>';
-			echo esc_html__( 'The test render failed: ', 'social-card-studio' ) . esc_html( $outcome['error'] );
-			echo '</p></div>';
-
-			return;
-		}
-
-		$result = $outcome['result'];
-
-		$this->open_table( __( 'Result', 'social-card-studio' ) );
-		$this->row( __( 'Engine', 'social-card-studio' ), $result->engine );
-		$this->row(
-			__( 'Time', 'social-card-studio' ),
-			sprintf(
-				/* translators: %s: duration in milliseconds. */
-				__( '%s ms', 'social-card-studio' ),
-				number_format_i18n( $result->duration_ms, 0 )
-			)
-		);
-		$this->row( __( 'Peak memory', 'social-card-studio' ), size_format( $result->peak_bytes ) );
-		$this->row( __( 'File size', 'social-card-studio' ), size_format( $result->size() ) );
-		$this->row(
-			__( 'Quality', 'social-card-studio' ),
-			sprintf(
-				/* translators: %d: JPEG quality the encoder settled on. */
-				__( 'JPEG, quality %d', 'social-card-studio' ),
-				$result->quality
-			)
-		);
-		$this->row(
-			__( 'Degraded', 'social-card-studio' ),
-			$result->is_degraded()
-				? $this->warn( implode( ', ', $result->degradations ) )
-				: $this->yes( __( 'no — drawn at full quality', 'social-card-studio' ) ),
-			true
-		);
-		$this->close_table();
-
-		printf(
-			'<p><img src="%s" width="600" height="315" alt="%s" style="border:1px solid #c3c4c7;max-width:100%%;height:auto" /></p>',
-			esc_attr( $outcome['data_uri'] ),
-			esc_attr__( 'Sample card rendered by this server', 'social-card-studio' )
-		);
-	}
-
-	/**
 	 * Renders the checks that later modules will fill in.
 	 *
 	 * @since 0.1.0
@@ -461,9 +336,8 @@ final class DiagnosticsPage {
 		$this->open_table( __( 'Not yet implemented', 'social-card-studio' ) );
 
 		$stubs = array(
-			__( 'Detected SEO plugin and priority mode', 'social-card-studio' ) => 'M6',
+			__( 'Detected SEO plugin', 'social-card-studio' ) => 'M6',
 			__( 'Action Scheduler status', 'social-card-studio' ) => 'M7',
-			__( 'AI provider, key and spend budget', 'social-card-studio' ) => 'M10',
 		);
 
 		foreach ( $stubs as $label => $module ) {
