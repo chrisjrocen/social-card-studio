@@ -424,8 +424,11 @@ final class Backfill {
 	 * @return int[] Post IDs.
 	 */
 	private function find_posts( array $filters, string $scope ): array {
-		$types = (array) ( $filters['post_types'] ?? $this->settings->get( 'enabled_post_types', array() ) );
-		$types = array_values( array_filter( array_map( 'strval', $types ) ) );
+		$enabled = array_map( 'strval', (array) $this->settings->get( 'enabled_post_types', array() ) );
+		$types   = (array) ( $filters['post_types'] ?? $enabled );
+
+		// A type with cards switched off never gets one, whatever the request asked for.
+		$types = array_values( array_intersect( array_filter( array_map( 'strval', $types ) ), $enabled ) );
 
 		if ( array() === $types ) {
 			return array();

@@ -57,15 +57,28 @@ final class SettingsSchemaTest extends TestCase {
 	}
 
 	/**
-	 * WebP and AVIF are not selectable, per the deliberate exclusion in SPEC §7.2.
+	 * Output format is not a setting: JPEG is the only format, and WebP and AVIF
+	 * stay excluded per SPEC §7.2.
 	 *
 	 * @return void
 	 */
-	public function test_webp_is_not_an_allowed_output_format(): void {
-		$formats = SettingsSchema::schema()['shape']['output']['shape']['format']['values'];
+	public function test_output_format_is_not_configurable(): void {
+		$this->assertSame( array( 'quality' ), array_keys( SettingsSchema::schema()['shape']['output']['shape'] ) );
+	}
 
-		$this->assertNotContains( 'webp', $formats );
-		$this->assertNotContains( 'avif', $formats );
+	/**
+	 * The keys removed in DB version 2 are gone from defaults and schema alike.
+	 *
+	 * @return void
+	 */
+	public function test_removed_keys_are_absent(): void {
+		$defaults = SettingsSchema::defaults();
+		$shape    = SettingsSchema::schema()['shape'];
+
+		$this->assertSame( array( 'accent' ), array_keys( $defaults['brand'] ) );
+		$this->assertSame( array( 'accent' ), array_keys( $shape['brand']['shape'] ) );
+		$this->assertArrayNotHasKey( 'enabled', $defaults['homepage_card'] );
+		$this->assertArrayNotHasKey( 'enabled', $shape['homepage_card']['shape'] );
 	}
 
 	/**

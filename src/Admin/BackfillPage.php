@@ -65,7 +65,7 @@ final class BackfillPage {
 	 */
 	public function add_menu(): void {
 		add_submenu_page(
-			DiagnosticsPage::SLUG,
+			DesignPage::SLUG,
 			__( 'Bulk generate', 'social-card-studio' ),
 			__( 'Bulk generate', 'social-card-studio' ),
 			self::CAPABILITY,
@@ -365,6 +365,17 @@ final class BackfillPage {
 
 		echo '<h2>' . esc_html__( 'Start a run', 'social-card-studio' ) . '</h2>';
 
+		if ( array() === $enabled ) {
+			printf(
+				'<p>%s <a href="%s">%s</a></p>',
+				esc_html__( 'No post types have cards enabled, so there is nothing to generate.', 'social-card-studio' ),
+				esc_url( admin_url( 'admin.php?page=' . SettingsPage::SLUG ) ),
+				esc_html__( 'Enable some in Settings', 'social-card-studio' )
+			);
+
+			return;
+		}
+
 		printf(
 			'<p>%s</p>',
 			esc_html(
@@ -385,14 +396,26 @@ final class BackfillPage {
 
 		echo '<tr><th scope="row">' . esc_html__( 'Post types', 'social-card-studio' ) . '</th><td>';
 
-		foreach ( get_post_types( array( 'public' => true ), 'objects' ) as $type ) {
+		foreach ( $enabled as $name ) {
+			$type = get_post_type_object( (string) $name );
+
+			if ( null === $type ) {
+				continue;
+			}
+
 			printf(
-				'<label style="margin-right:12px"><input type="checkbox" name="post_types[]" value="%s"%s /> %s</label>',
+				'<label style="margin-right:12px"><input type="checkbox" name="post_types[]" value="%s" checked /> %s</label>',
 				esc_attr( $type->name ),
-				checked( in_array( $type->name, $enabled, true ), true, false ),
 				esc_html( $type->labels->name )
 			);
 		}
+
+		printf(
+			'<p class="description">%s <a href="%s">%s</a></p>',
+			esc_html__( 'Only post types that have cards enabled are listed.', 'social-card-studio' ),
+			esc_url( admin_url( 'admin.php?page=' . SettingsPage::SLUG ) ),
+			esc_html__( 'Change in Settings', 'social-card-studio' )
+		);
 
 		echo '</td></tr>';
 

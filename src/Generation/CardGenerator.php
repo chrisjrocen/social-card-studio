@@ -189,7 +189,7 @@ final class CardGenerator {
 			);
 		}
 
-		$template = (string) $this->settings->get( 'homepage_card.template', TemplateRegistry::HOMEPAGE );
+		$template = $this->profile->site_template();
 		$document = $this->templates->get_or_fallback( $template, TemplateRegistry::HOMEPAGE );
 
 		if ( null === $document ) {

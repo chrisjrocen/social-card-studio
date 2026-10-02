@@ -2,7 +2,8 @@
 /**
  * Settings screen.
  *
- * Implements the post type and trigger parts of the Settings screen in SPEC.md §15.
+ * Implements the non-design parts of the Settings screen in SPEC.md §15; the
+ * design half lives on DesignPage.
  *
  * @package ChrxDigital\SocialCardStudio
  */
@@ -56,7 +57,7 @@ final class SettingsPage {
 	 */
 	public function add_menu(): void {
 		add_submenu_page(
-			DiagnosticsPage::SLUG,
+			DesignPage::SLUG,
 			__( 'Settings', 'social-card-studio' ),
 			__( 'Settings', 'social-card-studio' ),
 			self::CAPABILITY,
@@ -87,11 +88,13 @@ final class SettingsPage {
 		$input = array_merge(
 			$this->settings->all(),
 			array(
-				'enabled_post_types' => $types,
-				'triggers'           => array(
+				'enabled_post_types'       => $types,
+				'triggers'                 => array(
 					'on_publish' => ! empty( $_POST['trigger_on_publish'] ),
 					'lazy'       => ! empty( $_POST['trigger_lazy'] ),
 				),
+				'media_library_mode'       => ! empty( $_POST['media_library_mode'] ),
+				'delete_data_on_uninstall' => ! empty( $_POST['delete_data_on_uninstall'] ),
 			)
 		);
 
@@ -210,6 +213,29 @@ final class SettingsPage {
 		);
 
 		echo '</td></tr>';
+
+		echo '<tr><th scope="row">' . esc_html__( 'CDN offloading', 'social-card-studio' ) . '</th><td>';
+
+		printf(
+			'<label><input type="checkbox" name="media_library_mode" value="1"%s /> %s</label>',
+			checked( (bool) $this->settings->get( 'media_library_mode', false ), true, false ),
+			esc_html__( 'Register cards as hidden attachments', 'social-card-studio' )
+		);
+
+		echo '<p class="description">' . esc_html__( 'Turn this on only if an offload plugin (such as WP Offload Media) copies your uploads to a CDN: those plugins only see attachments. Cards stay hidden from the Media Library either way.', 'social-card-studio' ) . '</p>';
+		echo '</td></tr>';
+
+		echo '<tr><th scope="row">' . esc_html__( 'Uninstall', 'social-card-studio' ) . '</th><td>';
+
+		printf(
+			'<label><input type="checkbox" name="delete_data_on_uninstall" value="1"%s /> %s</label>',
+			checked( (bool) $this->settings->get( 'delete_data_on_uninstall', false ), true, false ),
+			esc_html__( 'Delete all cards and settings when the plugin is deleted', 'social-card-studio' )
+		);
+
+		echo '<p class="description" style="color:#d63638">' . esc_html__( 'This cannot be undone. Leave it off unless you are removing the plugin for good.', 'social-card-studio' ) . '</p>';
+		echo '</td></tr>';
+
 		echo '</tbody></table>';
 
 		submit_button( __( 'Save settings', 'social-card-studio' ) );
