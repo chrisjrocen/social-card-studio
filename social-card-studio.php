@@ -147,15 +147,18 @@ function scstudio_bootstrap() {
 		require_once SCSTUDIO_DIR . 'src/autoload.php';
 	}
 
-	/*
-	 * Action Scheduler keeps a registry of every copy present on a site and only the
-	 * newest initialises, so including ours alongside WooCommerce's is safe — and is
-	 * how the library is meant to be bundled. It has to be included before
-	 * plugins_loaded finishes for its own setup to run.
-	 */
-	\ChrxDigital\SocialCardStudio\Generation\Scheduler::load();
-
 	\ChrxDigital\SocialCardStudio\Plugin::instance()->boot();
+}
+
+/*
+ * Action Scheduler keeps a registry of every copy present on a site and only the
+ * newest initialises, so including ours alongside WooCommerce's is safe — and is
+ * how the library is meant to be bundled. It registers itself on plugins_loaded at
+ * priorities 0 and 1, so it must be included while plugin files are still loading:
+ * included from scstudio_bootstrap() it would be too late and never initialise.
+ */
+if ( version_compare( PHP_VERSION, SCSTUDIO_MIN_PHP, '>=' ) && is_readable( SCSTUDIO_DIR . 'vendor/woocommerce/action-scheduler/action-scheduler.php' ) ) {
+	require_once SCSTUDIO_DIR . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
 }
 
 add_action( 'plugins_loaded', 'scstudio_bootstrap', 5 );

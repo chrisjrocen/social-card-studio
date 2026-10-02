@@ -16,6 +16,7 @@ use ChrxDigital\SocialCardStudio\Admin\ClassicMetabox;
 use ChrxDigital\SocialCardStudio\Admin\EditorAssets;
 use ChrxDigital\SocialCardStudio\Admin\DiagnosticsPage;
 use ChrxDigital\SocialCardStudio\Admin\PostListColumn;
+use ChrxDigital\SocialCardStudio\Admin\SettingsPage;
 use ChrxDigital\SocialCardStudio\Card\AltText;
 use ChrxDigital\SocialCardStudio\Card\CardRepository;
 use ChrxDigital\SocialCardStudio\Card\InputHasher;
@@ -153,6 +154,7 @@ final class Plugin {
 
 		if ( is_admin() ) {
 			$this->container->get( DiagnosticsPage::class )->register();
+			$this->container->get( SettingsPage::class )->register();
 			$this->container->get( BackfillPage::class )->register();
 			$this->container->get( PostListColumn::class )->register();
 			$this->container->get( EditorAssets::class )->register();
@@ -422,6 +424,11 @@ final class Plugin {
 				$c->get( Scheduler::class ),
 				$c->get( Settings::class )
 			)
+		);
+
+		$this->container->set(
+			SettingsPage::class,
+			static fn ( Container $c ): SettingsPage => new SettingsPage( $c->get( Settings::class ) )
 		);
 
 		$this->container->set(

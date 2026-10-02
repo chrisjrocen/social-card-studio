@@ -17,10 +17,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Queues background work.
  *
- * Action Scheduler is bundled but not loaded blindly: it maintains a registry of every
- * copy on the site and only the newest one initialises. Loading ours alongside
- * WooCommerce's is therefore safe and is how the library is designed to be shipped —
- * what is not safe is assuming it is there, so every call degrades to WP-Cron when it
+ * Action Scheduler is bundled and included from the main plugin file: it maintains a
+ * registry of every copy on the site and only the newest one initialises. Loading ours
+ * alongside WooCommerce's is therefore safe and is how the library is designed to be
+ * shipped — what is not safe is assuming it is there, so every call degrades to WP-Cron when it
  * is not. A site whose vendor directory was stripped still generates cards; it just
  * does so on a less reliable queue.
  *
@@ -33,24 +33,6 @@ final class Scheduler {
 	public const HOOK_GENERATE = 'scstudio_generate_card';
 	public const HOOK_BACKFILL = 'scstudio_backfill_batch';
 	public const HOOK_HOME     = 'scstudio_generate_home_card';
-
-	/**
-	 * Loads the bundled copy of Action Scheduler, if nothing else has.
-	 *
-	 * Called from the plugin bootstrap. Action Scheduler must be included before
-	 * `plugins_loaded` for its own initialisation to run.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @return void
-	 */
-	public static function load(): void {
-		$bundled = rtrim( SCSTUDIO_DIR, '/' ) . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
-
-		if ( is_readable( $bundled ) ) {
-			require_once $bundled;
-		}
-	}
 
 	/**
 	 * Whether Action Scheduler is usable.
