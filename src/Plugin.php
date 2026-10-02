@@ -13,6 +13,7 @@ namespace ChrxDigital\SocialCardStudio;
 
 use ChrxDigital\SocialCardStudio\Admin\BackfillPage;
 use ChrxDigital\SocialCardStudio\Admin\ClassicMetabox;
+use ChrxDigital\SocialCardStudio\Admin\DesignPage;
 use ChrxDigital\SocialCardStudio\Admin\EditorAssets;
 use ChrxDigital\SocialCardStudio\Admin\DiagnosticsPage;
 use ChrxDigital\SocialCardStudio\Admin\PostListColumn;
@@ -34,6 +35,7 @@ use ChrxDigital\SocialCardStudio\Generation\Lock;
 use ChrxDigital\SocialCardStudio\Generation\OnPublish;
 use ChrxDigital\SocialCardStudio\Generation\Scheduler;
 use ChrxDigital\SocialCardStudio\Render\FontResolver;
+use ChrxDigital\SocialCardStudio\Rest\DesignPreviewController;
 use ChrxDigital\SocialCardStudio\Rest\EditorController;
 use ChrxDigital\SocialCardStudio\Render\Legibility;
 use ChrxDigital\SocialCardStudio\Render\MemoryGuard;
@@ -147,15 +149,18 @@ final class Plugin {
 		$this->container->get( OnPublish::class )->register();
 		$this->container->get( Backfill::class )->register();
 		$this->container->get( EditorController::class )->register();
+		$this->container->get( DesignPreviewController::class )->register();
 
 		// Detection happens at plugins_loaded, per SPEC §10.2, by which point every
 		// SEO plugin has declared itself.
 		add_action( 'plugins_loaded', array( $this, 'register_delivery' ), 20 );
 
 		if ( is_admin() ) {
-			$this->container->get( DiagnosticsPage::class )->register();
+			// Registration order is submenu order: Diagnostics stays last.
+			$this->container->get( DesignPage::class )->register();
 			$this->container->get( SettingsPage::class )->register();
 			$this->container->get( BackfillPage::class )->register();
+			$this->container->get( DiagnosticsPage::class )->register();
 			$this->container->get( PostListColumn::class )->register();
 			$this->container->get( EditorAssets::class )->register();
 			$this->container->get( ClassicMetabox::class )->register();
@@ -453,7 +458,30 @@ final class Plugin {
 				$c->get( CardGenerator::class ),
 				$c->get( CardDirectory::class ),
 				$c->get( AltText::class ),
+				$c->get( Settings::class ),
+				$c->get( RenderProfile::class )
+			)
+		);
+
+		$this->container->set(
+			DesignPreviewController::class,
+			static fn ( Container $c ): DesignPreviewController => new DesignPreviewController(
+				$c->get( EditorController::class ),
+				$c->get( TokenResolver::class ),
+				$c->get( RenderProfile::class ),
 				$c->get( Settings::class )
+			)
+		);
+
+		$this->container->set(
+			DesignPage::class,
+			static fn ( Container $c ): DesignPage => new DesignPage(
+				$c->get( Settings::class ),
+				$c->get( TemplateRegistry::class ),
+				$c->get( RenderProfile::class ),
+				$c->get( Backfill::class ),
+				$c->get( CardGenerator::class ),
+				$c->get( Env::class )
 			)
 		);
 
@@ -464,7 +492,8 @@ final class Plugin {
 				$c->get( TokenResolver::class ),
 				$c->get( FontResolver::class ),
 				$c->get( EditorController::class ),
-				$c->get( Settings::class )
+				$c->get( Settings::class ),
+				$c->get( RenderProfile::class )
 			)
 		);
 

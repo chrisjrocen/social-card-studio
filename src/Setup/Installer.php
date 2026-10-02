@@ -36,8 +36,10 @@ final class Installer {
 
 	/**
 	 * Current storage schema version.
+	 *
+	 * 2: dead settings keys stripped from scstudio_settings.
 	 */
-	public const DB_VERSION = 1;
+	public const DB_VERSION = 2;
 
 	/**
 	 * Runs on plugin activation.
@@ -99,7 +101,44 @@ final class Installer {
 			EventsTable::install();
 		}
 
+		self::strip_removed_settings();
 		self::install_site();
+	}
+
+	/**
+	 * Removes settings keys that DB version 2 dropped from the schema.
+	 *
+	 * Settings::all() already ignores them on read; this keeps the stored option
+	 * matching the schema so nothing downstream sees the stale keys.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @return void
+	 */
+	private static function strip_removed_settings(): void {
+		$stored = get_option( Settings::OPTION, false );
+
+		if ( ! is_array( $stored ) ) {
+			return;
+		}
+
+		$removed = array(
+			'brand'         => array( 'logo_id', 'logo_position' ),
+			'homepage_card' => array( 'enabled' ),
+			'output'        => array( 'format', 'target_bytes', 'max_bytes' ),
+		);
+
+		foreach ( $removed as $group => $keys ) {
+			if ( ! isset( $stored[ $group ] ) || ! is_array( $stored[ $group ] ) ) {
+				continue;
+			}
+
+			foreach ( $keys as $key ) {
+				unset( $stored[ $group ][ $key ] );
+			}
+		}
+
+		update_option( Settings::OPTION, $stored, true );
 	}
 
 	/**

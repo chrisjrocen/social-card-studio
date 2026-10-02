@@ -13,6 +13,7 @@ namespace ChrxDigital\SocialCardStudio\Rest;
 
 use ChrxDigital\SocialCardStudio\Card\AltText;
 use ChrxDigital\SocialCardStudio\Card\CardRepository;
+use ChrxDigital\SocialCardStudio\Card\RenderProfile;
 use ChrxDigital\SocialCardStudio\Card\TokenResolver;
 use ChrxDigital\SocialCardStudio\Generation\CardGenerator;
 use ChrxDigital\SocialCardStudio\Render\FontResolver;
@@ -58,6 +59,7 @@ final class EditorController {
 	 * @param CardDirectory    $directory  Card directory resolver.
 	 * @param AltText          $alt        Alt text generation.
 	 * @param Settings         $settings   Plugin settings.
+	 * @param RenderProfile    $profile    Template resolution.
 	 */
 	public function __construct(
 		private readonly RendererFactory $factory,
@@ -69,7 +71,8 @@ final class EditorController {
 		private readonly CardGenerator $generator,
 		private readonly CardDirectory $directory,
 		private readonly AltText $alt,
-		private readonly Settings $settings
+		private readonly Settings $settings,
+		private readonly RenderProfile $profile
 	) {}
 
 	/**
@@ -179,14 +182,37 @@ final class EditorController {
 	 * @return WP_REST_Response|WP_Error Preview payload.
 	 */
 	public function preview( WP_REST_Request $request ) {
-		$post_id  = (int) $request->get_param( 'post_id' );
-		$document = $this->templates->get_or_fallback( $this->requested_template( $request, $post_id ) );
+		$post_id = (int) $request->get_param( 'post_id' );
+
+		return $this->render_preview(
+			$this->requested_template( $request, $post_id ),
+			$this->tokens_for( $request, $post_id ),
+			$post_id,
+			(string) $request->get_param( 'alt' )
+		);
+	}
+
+	/**
+	 * Renders a template to an inline preview payload, storing nothing.
+	 *
+	 * Shared by the editor panel and the Design screen so both report the same
+	 * image, size and alt text for the same inputs.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @param string                $template Template identifier; falls back when unknown.
+	 * @param array<string, string> $tokens   Resolved tokens.
+	 * @param int                   $post_id  Post ID, 0 for site level.
+	 * @param string                $alt      Explicit alt text, empty to generate it.
+	 *
+	 * @return WP_REST_Response|WP_Error Preview payload.
+	 */
+	public function render_preview( string $template, array $tokens, int $post_id, string $alt = '' ) {
+		$document = $this->templates->get_or_fallback( $template );
 
 		if ( null === $document ) {
 			return new WP_Error( 'scstudio_no_template', __( 'No usable template is available.', 'social-card-studio' ), array( 'status' => 500 ) );
 		}
-
-		$tokens = $this->tokens_for( $request, $post_id );
 
 		try {
 			$result = $this->factory->create()->render(
@@ -220,7 +246,7 @@ final class EditorController {
 				'bytes'    => $result->size(),
 				'engine'   => $result->engine,
 				'duration' => (int) round( $result->duration_ms ),
-				'alt'      => $this->alt->generate( $tokens, (string) $request->get_param( 'alt' ) ),
+				'alt'      => $this->alt->generate( $tokens, $alt ),
 			)
 		);
 	}
@@ -346,7 +372,7 @@ final class EditorController {
 			return (string) $overrides['template'];
 		}
 
-		return (string) $this->settings->get( 'default_template', 'editorial-left' );
+		return $this->profile->sitewide_template_for( (string) get_post_type( $post_id ) );
 	}
 
 	/**

@@ -23,6 +23,9 @@ final class SettingsSchema {
 	/**
 	 * Default settings, per SPEC §5.1.
 	 *
+	 * DB version 2 removed brand.logo_id, brand.logo_position, homepage_card.enabled
+	 * and output.format, target_bytes and max_bytes: nothing read them.
+	 *
 	 * @since 0.1.0
 	 *
 	 * @return array<string, mixed> Defaults.
@@ -37,9 +40,7 @@ final class SettingsSchema {
 				'lazy'       => true,
 			),
 			'brand'                    => array(
-				'accent'        => '#2563EB',
-				'logo_id'       => 0,
-				'logo_position' => 'top-left',
+				'accent' => '#2563EB',
 			),
 			'typography'               => array(
 				'source'  => 'theme',
@@ -47,15 +48,11 @@ final class SettingsSchema {
 				'body'    => '',
 			),
 			'homepage_card'            => array(
-				'enabled'  => true,
 				'headline' => '',
 				'template' => 'brand-statement',
 			),
 			'output'                   => array(
-				'format'       => 'jpeg',
-				'quality'      => 82,
-				'target_bytes' => 600000,
-				'max_bytes'    => 1048576,
+				'quality' => 82,
 			),
 			'media_library_mode'       => false,
 			'alt_text_pattern'         => '{{headline}} — {{site_name}}',
@@ -99,18 +96,9 @@ final class SettingsSchema {
 				'brand'                    => array(
 					'type'  => 'map',
 					'shape' => array(
-						'accent'        => array(
+						'accent' => array(
 							'type'   => 'string',
 							'format' => 'color',
-						),
-						'logo_id'       => array(
-							'type'  => 'int',
-							'min'   => 0,
-							'clamp' => true,
-						),
-						'logo_position' => array(
-							'type'   => 'enum',
-							'values' => array( 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'none' ),
 						),
 					),
 				),
@@ -134,7 +122,6 @@ final class SettingsSchema {
 				'homepage_card'            => array(
 					'type'  => 'map',
 					'shape' => array(
-						'enabled'  => array( 'type' => 'bool' ),
 						'headline' => array(
 							'type'      => 'string',
 							'maxlength' => 200,
@@ -149,27 +136,10 @@ final class SettingsSchema {
 				'output'                   => array(
 					'type'  => 'map',
 					'shape' => array(
-						'format'       => array(
-							// WebP and AVIF are deliberately absent, per SPEC §7.2.
-							'type'   => 'enum',
-							'values' => array( 'jpeg', 'png' ),
-						),
-						'quality'      => array(
+						'quality' => array(
 							'type'  => 'int',
 							'min'   => 40,
 							'max'   => 100,
-							'clamp' => true,
-						),
-						'target_bytes' => array(
-							'type'  => 'int',
-							'min'   => 50000,
-							'max'   => 5242880,
-							'clamp' => true,
-						),
-						'max_bytes'    => array(
-							'type'  => 'int',
-							'min'   => 100000,
-							'max'   => 5242880,
 							'clamp' => true,
 						),
 					),

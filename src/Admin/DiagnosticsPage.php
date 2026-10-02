@@ -67,24 +67,20 @@ final class DiagnosticsPage {
 	}
 
 	/**
-	 * Adds the menu page.
-	 *
-	 * The top-level menu is claimed here in Phase 0 and Settings will take it over in
-	 * M9; Diagnostics becomes a submenu at that point.
+	 * Adds the submenu entry, last under the Design screen.
 	 *
 	 * @since 0.1.0
 	 *
 	 * @return void
 	 */
 	public function add_menu(): void {
-		add_menu_page(
-			__( 'Social Card Studio', 'social-card-studio' ),
-			__( 'Social Cards', 'social-card-studio' ),
+		add_submenu_page(
+			DesignPage::SLUG,
+			__( 'Diagnostics', 'social-card-studio' ),
+			__( 'Diagnostics', 'social-card-studio' ),
 			self::CAPABILITY,
 			self::SLUG,
-			array( $this, 'render' ),
-			'dashicons-format-image',
-			81
+			array( $this, 'render' )
 		);
 	}
 

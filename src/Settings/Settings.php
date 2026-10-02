@@ -175,16 +175,82 @@ final class Settings {
 	public function fingerprint(): string {
 		$settings = $this->all();
 
+		/*
+		 * brand and output are hashed in their pre-DB-version-2 shape, with the
+		 * removed keys pinned to the values every site had (none had a UI to change
+		 * them). Hashing the trimmed maps instead would mark every card on every
+		 * site stale on upgrade, for a change that alters no pixels.
+		 */
+		$brand  = array_merge(
+			array(
+				'logo_id'       => 0,
+				'logo_position' => 'top-left',
+			),
+			(array) ( $settings['brand'] ?? array() )
+		);
+		$output = array_merge(
+			array(
+				'format'       => 'jpeg',
+				'target_bytes' => 600000,
+				'max_bytes'    => 1048576,
+			),
+			(array) ( $settings['output'] ?? array() )
+		);
+
 		return Hash::of(
 			array(
-				'brand'             => $settings['brand'] ?? array(),
+				'brand'             => $brand,
 				'typography'        => $settings['typography'] ?? array(),
-				'output'            => $settings['output'] ?? array(),
+				'output'            => $output,
 				'default_template'  => $settings['default_template'] ?? '',
 				'per_type_template' => $settings['per_type_template'] ?? array(),
 				'alt_text_pattern'  => $settings['alt_text_pattern'] ?? '',
 			)
 		);
+	}
+
+	/**
+	 * Runs a callback with unsaved settings in effect.
+	 *
+	 * The overrides are validated exactly as a save would be, swapped into the
+	 * in-request cache, and discarded afterwards whether or not the callback throws.
+	 * Nothing is written to the database.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @template T
+	 *
+	 * @param array<string, mixed> $overrides Partial settings to apply.
+	 * @param callable(): T        $callback  Work to do with the overrides in effect.
+	 *
+	 * @return T|array{ok: false, errors: string[]} The callback's result, or the validation errors.
+	 */
+	public function preview( array $overrides, callable $callback ): mixed {
+		$merged = $this->deep_merge( $this->all(), $overrides );
+
+		// An open map: the form sends the whole thing, and a dropped key means "use the default".
+		if ( isset( $overrides['per_type_template'] ) ) {
+			$merged['per_type_template'] = (array) $overrides['per_type_template'];
+		}
+
+		$result = $this->sanitize( $merged );
+
+		if ( ! $result['ok'] ) {
+			return array(
+				'ok'     => false,
+				'errors' => $result['errors'],
+			);
+		}
+
+		$blog = is_multisite() ? get_current_blog_id() : 1;
+
+		$this->cache[ $blog ] = $result['value'];
+
+		try {
+			return $callback();
+		} finally {
+			$this->flush();
+		}
 	}
 
 	/**
@@ -208,7 +274,7 @@ final class Settings {
 	 * @return array<string, mixed> Complete settings.
 	 */
 	private function merge_defaults( array $input ): array {
-		return $this->deep_merge( SettingsSchema::defaults(), $input );
+		return $this->deep_merge( SettingsSchema::defaults(), $input, true );
 	}
 
 	/**
@@ -217,17 +283,27 @@ final class Settings {
 	 * Lists are replaced rather than merged: a user who deselects every post type
 	 * must end up with none, not with the defaults reinstated.
 	 *
+	 * Keys absent from the base map are dropped when $strict is set. The schema
+	 * rejects unknown keys, so without this a stored option still carrying a key
+	 * removed in a later version would make every save fail. An empty array in the
+	 * base (per_type_template) is an open map and is taken whole.
+	 *
 	 * @since 0.1.0
 	 *
 	 * @param array<string, mixed> $base     Defaults.
 	 * @param array<string, mixed> $override Incoming values.
+	 * @param bool                 $strict   Drop keys the base does not have.
 	 *
 	 * @return array<string, mixed> Merged array.
 	 */
-	private function deep_merge( array $base, array $override ): array {
+	private function deep_merge( array $base, array $override, bool $strict = false ): array {
 		foreach ( $override as $key => $value ) {
-			if ( is_array( $value ) && isset( $base[ $key ] ) && is_array( $base[ $key ] ) && ! array_is_list( $value ) ) {
-				$base[ $key ] = $this->deep_merge( $base[ $key ], $value );
+			if ( $strict && ! array_key_exists( $key, $base ) ) {
+				continue;
+			}
+
+			if ( is_array( $value ) && isset( $base[ $key ] ) && is_array( $base[ $key ] ) && array() !== $base[ $key ] && ! array_is_list( $value ) ) {
+				$base[ $key ] = $this->deep_merge( $base[ $key ], $value, $strict );
 
 				continue;
 			}

@@ -11,6 +11,7 @@ declare( strict_types=1 );
 
 namespace ChrxDigital\SocialCardStudio\Admin;
 
+use ChrxDigital\SocialCardStudio\Card\RenderProfile;
 use ChrxDigital\SocialCardStudio\Card\TokenResolver;
 use ChrxDigital\SocialCardStudio\Rest\EditorController;
 use ChrxDigital\SocialCardStudio\Render\FontResolver;
@@ -45,13 +46,15 @@ final class EditorAssets {
 	 * @param FontResolver     $fonts      Font resolution.
 	 * @param EditorController $controller Editor REST routes.
 	 * @param Settings         $settings   Plugin settings.
+	 * @param RenderProfile    $profile    Template resolution.
 	 */
 	public function __construct(
 		private readonly TemplateRegistry $templates,
 		private readonly TokenResolver $tokens,
 		private readonly FontResolver $fonts,
 		private readonly EditorController $controller,
-		private readonly Settings $settings
+		private readonly Settings $settings,
+		private readonly RenderProfile $profile
 	) {}
 
 	/**
@@ -152,7 +155,7 @@ final class EditorAssets {
 			$documents[ $id ] = $document->to_array();
 			$choices[]        = array(
 				'value' => $id,
-				'label' => $this->label_for( (string) $id ),
+				'label' => self::label_for( (string) $id ),
 			);
 		}
 
@@ -165,7 +168,7 @@ final class EditorAssets {
 			'images'    => $this->image_urls( $post_id ),
 			'fonts'     => $this->font_map(),
 			'defaults'  => array(
-				'template'          => (string) $this->settings->get( 'default_template', 'editorial-left' ),
+				'template'          => $this->profile->sitewide_template_for( (string) get_post_type( $post_id ) ),
 				'headlineWarnAt'    => 70,
 				'previewDebounceMs' => 250,
 			),
@@ -302,13 +305,15 @@ final class EditorAssets {
 	/**
 	 * A human-readable template name.
 	 *
+	 * Shared with the Design screen so both list presets under the same names.
+	 *
 	 * @since 0.1.0
 	 *
 	 * @param string $id Template identifier.
 	 *
 	 * @return string Label.
 	 */
-	private function label_for( string $id ): string {
+	public static function label_for( string $id ): string {
 		$labels = array(
 			'editorial-left'  => __( 'Editorial — photo with headline', 'social-card-studio' ),
 			'bold-statement'  => __( 'Bold statement — brand colour', 'social-card-studio' ),

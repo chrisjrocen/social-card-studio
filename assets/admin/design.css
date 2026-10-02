@@ -1,0 +1,128 @@
+/* Design screen. Cards are 1200x630, so every frame keeps that ratio. */
+
+.scstudio-design__preview-with {
+	margin: 16px 0;
+}
+
+.scstudio-design__preview-with select {
+	max-width: 100%;
+}
+
+.scstudio-preview {
+	margin: 0 0 16px;
+	max-width: 600px;
+}
+
+.scstudio-preview__frame {
+	position: relative;
+	aspect-ratio: 1200 / 630;
+	background: #f0f0f1;
+	border: 1px solid #dcdcde;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.scstudio-preview__frame img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.scstudio-preview__status {
+	padding: 16px;
+	color: #50575e;
+	text-align: center;
+}
+
+.scstudio-preview.is-loading .scstudio-preview__frame,
+.scstudio-gallery__thumb.is-loading {
+	opacity: 0.6;
+	transition: opacity 0.15s;
+}
+
+.scstudio-preview figcaption {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: 6px;
+	color: #50575e;
+}
+
+.scstudio-preview__badge {
+	align-self: flex-start;
+	padding: 2px 8px;
+	border-radius: 2px;
+	background: #f0f6fc;
+	color: #0a4b78;
+	font-weight: 600;
+}
+
+.scstudio-preview__note {
+	color: #996800;
+}
+
+.scstudio-gallery {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 12px;
+	max-width: 960px;
+	margin: 0 0 16px;
+}
+
+.scstudio-gallery__item {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 6px;
+	border: 2px solid transparent;
+	border-radius: 4px;
+	background: #fff;
+	cursor: pointer;
+}
+
+.scstudio-gallery__item:hover {
+	border-color: #c3c4c7;
+}
+
+.scstudio-gallery__item:has(input:checked) {
+	border-color: var(--wp-admin-theme-color, #2271b1);
+}
+
+.scstudio-gallery__item:has(input:focus-visible) {
+	box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #2271b1);
+}
+
+/* Visually hidden but still keyboard-operable. */
+.scstudio-gallery__item input {
+	position: absolute;
+	opacity: 0;
+	width: 1px;
+	height: 1px;
+}
+
+.scstudio-gallery__thumb {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: 1200 / 630;
+	background: #f0f0f1;
+	color: #50575e;
+	font-size: 12px;
+	overflow: hidden;
+}
+
+.scstudio-gallery__thumb img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.scstudio-gallery__label {
+	font-size: 13px;
+	line-height: 1.4;
+}

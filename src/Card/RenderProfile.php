@@ -61,24 +61,62 @@ final class RenderProfile {
 	 */
 	public function template_for( int $post_id ): string {
 		if ( 0 === $post_id ) {
-			return (string) $this->settings->get( 'homepage_card.template', TemplateRegistry::HOMEPAGE );
+			return $this->site_template();
 		}
 
+		$own = $this->post_template( $post_id );
+
+		if ( '' !== $own ) {
+			return $own;
+		}
+
+		return $this->sitewide_template_for( (string) get_post_type( $post_id ) );
+	}
+
+	/**
+	 * The template a post chose for itself in the editor, if any.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return string Template identifier, empty when the post follows the sitewide design.
+	 */
+	public function post_template( int $post_id ): string {
 		$overrides = get_post_meta( $post_id, CardRepository::META_OVERRIDES, true );
 		$overrides = is_array( $overrides ) ? $overrides : array();
 
-		if ( '' !== (string) ( $overrides['template'] ?? '' ) ) {
-			return (string) $overrides['template'];
-		}
+		return (string) ( $overrides['template'] ?? '' );
+	}
 
+	/**
+	 * The template a post type uses when a post has not chosen its own.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @param string $post_type Post type name.
+	 *
+	 * @return string Template identifier.
+	 */
+	public function sitewide_template_for( string $post_type ): string {
 		$per_type = (array) $this->settings->get( 'per_type_template', array() );
-		$type     = (string) get_post_type( $post_id );
 
-		if ( '' !== (string) ( $per_type[ $type ] ?? '' ) ) {
-			return (string) $per_type[ $type ];
+		if ( '' !== (string) ( $per_type[ $post_type ] ?? '' ) ) {
+			return (string) $per_type[ $post_type ];
 		}
 
 		return (string) $this->settings->get( 'default_template', 'editorial-left' );
+	}
+
+	/**
+	 * The template for the site card: the homepage and the last-resort fallback.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @return string Template identifier.
+	 */
+	public function site_template(): string {
+		return (string) $this->settings->get( 'homepage_card.template', TemplateRegistry::HOMEPAGE );
 	}
 
 	/**

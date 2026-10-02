@@ -101,4 +101,43 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 	}
 }
 
+if ( ! function_exists( 'is_multisite' ) ) {
+	/**
+	 * The unit suite is single-site.
+	 *
+	 * @return bool Always false.
+	 */
+	function is_multisite(): bool {
+		return false;
+	}
+}
+
+if ( ! function_exists( 'get_option' ) ) {
+	/**
+	 * Reads from an in-memory option store that tests seed directly.
+	 *
+	 * @param string $option        Option name.
+	 * @param mixed  $default_value Returned when unset.
+	 *
+	 * @return mixed Stored value.
+	 */
+	function get_option( string $option, $default_value = false ) {
+		return $GLOBALS['scstudio_test_options'][ $option ] ?? $default_value;
+	}
+}
+
+if ( ! function_exists( '__' ) ) {
+	/**
+	 * Returns the text untranslated.
+	 *
+	 * @param string $text   Text.
+	 * @param string $domain Text domain.
+	 *
+	 * @return string The text.
+	 */
+	function __( string $text, string $domain = 'default' ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Matches the WordPress signature.
+		return $text;
+	}
+}
+
 require_once dirname( __DIR__ ) . '/src/autoload.php';
